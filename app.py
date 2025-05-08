@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from io import BytesIO
 
 st.set_page_config(page_title="Cruscotto Finanziario PMI", layout="wide")
 st.title("📊 Cruscotto Finanziario per PMI")
