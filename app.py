@@ -12,6 +12,22 @@ st.set_page_config(page_title="Cruscotto Finanziario PMI", layout="wide")
 st.title("📊 Cruscotto Finanziario per PMI")
 
 uploaded_files = st.file_uploader("Carica uno o più file Excel del bilancio (uno per anno)", type=["xlsx"], accept_multiple_files=True)
+benchmark_file = st.file_uploader("Carica file CSV benchmark (facoltativo)", type=["csv"])
+
+# Benchmark di default
+benchmark_default = {
+    "EBITDA Margin": 15.0,
+    "ROE": 10.0,
+    "ROI": 8.0,
+    "Current Ratio": 1.3
+}
+
+# Leggi benchmark personalizzato se presente
+if benchmark_file:
+    df_benchmark = pd.read_csv(benchmark_file)
+    benchmark = {row['KPI']: row['Valore'] for _, row in df_benchmark.iterrows()}
+else:
+    benchmark = benchmark_default
 
 if uploaded_files:
     bilanci = {}
@@ -29,6 +45,8 @@ if uploaded_files:
             }
         except Exception as e:
             st.error(f"Errore nel file {file.name}: {e}")
+
+    tabella_kpi = []
 
     for anno, dati in sorted(bilanci.items()):
         st.header(f"📅 Bilancio {anno}")
@@ -63,13 +81,49 @@ if uploaded_files:
             roe = round(utile_netto / patrimonio_netto * 100, 2)
             roi = round(ebit / totale_attivo * 100, 2)
 
+            # Valutazione sintetica
+            valutazione = "Ottima solidità ✅"
+            if any([
+                ebitda_margin < 10,
+                roe < 5,
+                roi < 5,
+                current_ratio < 1
+            ]):
+                valutazione = "⚠️ Attenzione: alcuni indici critici"
+            if all([
+                ebitda_margin < 10,
+                roe < 5,
+                roi < 5,
+                current_ratio < 1
+            ]):
+                valutazione = "❌ Situazione critica"
+
+            st.markdown(f"### 🧠 Valutazione sintetica: {valutazione}")
+
             st.markdown("## 📌 Indicatori di Redditività")
             col1, col2, col3 = st.columns(3)
-            col1.metric("EBITDA Margin", f"{ebitda_margin} %")
-            col2.metric("ROE", f"{roe} %")
-            col3.metric("ROI", f"{roi} %")
+            col1.metric("EBITDA Margin", f"{ebitda_margin} %", delta=f"{ebitda_margin - benchmark['EBITDA Margin']:.2f}%")
+            col2.metric("ROE", f"{roe} %", delta=f"{roe - benchmark['ROE']:.2f}%")
+            col3.metric("ROI", f"{roi} %", delta=f"{roi - benchmark['ROI']:.2f}%")
+            st.metric("Current Ratio", f"{current_ratio}", delta=f"{current_ratio - benchmark['Current Ratio']:.2f}")
 
-            # 📊 Grafico a barre
+            tabella_kpi.append({
+                "Anno": anno,
+                "EBITDA Margin": ebitda_margin,
+                "Benchmark EBITDA": benchmark["EBITDA Margin"],
+                "Δ EBITDA": ebitda_margin - benchmark["EBITDA Margin"],
+                "ROE": roe,
+                "Benchmark ROE": benchmark["ROE"],
+                "Δ ROE": roe - benchmark["ROE"],
+                "ROI": roi,
+                "Benchmark ROI": benchmark["ROI"],
+                "Δ ROI": roi - benchmark["ROI"],
+                "Current Ratio": current_ratio,
+                "Benchmark Current": benchmark["Current Ratio"],
+                "Δ Current": current_ratio - benchmark["Current Ratio"],
+                "Valutazione": valutazione
+            })
+
             st.markdown("## 📈 Ricavi e Utile Netto")
             bar_fig = px.bar(
                 x=["Ricavi", "Utile Netto"],
@@ -80,7 +134,6 @@ if uploaded_files:
             )
             st.plotly_chart(bar_fig, use_container_width=True)
 
-            # 🧩 Grafici a torta
             st.markdown("## 🧩 Composizione Attivo e Passivo")
             col1, col2 = st.columns(2)
 
@@ -90,82 +143,31 @@ if uploaded_files:
             fig_passivo = px.pie(df_passivo, names="Passività e Patrimonio Netto", values="Importo (€)", title="Passivo")
             col2.plotly_chart(fig_passivo, use_container_width=True)
 
-            # 🔄 Esportazione Excel
-            st.markdown("## \U0001F4E4 Esporta il Report")
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                df_ce.to_excel(writer, sheet_name="Conto Economico", index=False)
-                df_attivo.to_excel(writer, sheet_name="Attivo", index=False)
-                df_passivo.to_excel(writer, sheet_name="Passivo", index=False)
-
-                kpi_df = pd.DataFrame({
-                    "KPI": ["Current Ratio", "EBITDA Margin (%)", "ROE (%)", "ROI (%)"],
-                    "Valore": [current_ratio, ebitda_margin, roe, roi]
-                })
-                kpi_df.to_excel(writer, sheet_name="Indicatori", index=False)
-
-            st.download_button(
-                label=f"📥 Scarica report Excel {anno}",
-                data=output.getvalue(),
-                file_name=f"report_{anno}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-
-            # 📄 PDF
-            def genera_pdf(kpi_dict, bar_chart_path, pie1_path, pie2_path):
-                buffer = BytesIO()
-                c = canvas.Canvas(buffer, pagesize=A4)
-                width, height = A4
-
-                c.setFont("Helvetica-Bold", 16)
-                c.drawString(2 * cm, height - 2 * cm, f"Report Finanziario {anno}")
-
-                c.setFont("Helvetica", 12)
-                y = height - 3.5 * cm
-                for k, v in kpi_dict.items():
-                    c.drawString(2 * cm, y, f"{k}: {v}")
-                    y -= 0.6 * cm
-
-                if os.path.exists(bar_chart_path):
-                    c.drawImage(bar_chart_path, 2 * cm, y - 8 * cm, width=16 * cm, height=6 * cm)
-                    y -= 9 * cm
-                if os.path.exists(pie1_path):
-                    c.drawImage(pie1_path, 2 * cm, y - 7 * cm, width=8 * cm, height=6 * cm)
-                if os.path.exists(pie2_path):
-                    c.drawImage(pie2_path, 10 * cm, y - 7 * cm, width=8 * cm, height=6 * cm)
-
-                c.showPage()
-                c.save()
-                buffer.seek(0)
-                return buffer
-
-            bar_path = f"bar_chart_{anno}.png"
-            pie_attivo_path = f"pie_attivo_{anno}.png"
-            pie_passivo_path = f"pie_passivo_{anno}.png"
-
-            bar_fig.write_image(bar_path)
-            fig_attivo.write_image(pie_attivo_path)
-            fig_passivo.write_image(pie_passivo_path)
-
-            kpi_data = {
-                "Ricavi": f"€ {ricavi:,.0f}",
-                "Utile Netto": f"€ {utile_netto:,.0f}",
-                "Current Ratio": current_ratio,
-                "EBITDA Margin": f"{ebitda_margin}%",
-                "ROE": f"{roe}%",
-                "ROI": f"{roi}%"
-            }
-
-            pdf_buffer = genera_pdf(kpi_data, bar_path, pie_attivo_path, pie_passivo_path)
-
-            st.download_button(
-                label=f"📄 Scarica report PDF {anno}",
-                data=pdf_buffer,
-                file_name=f"report_{anno}.pdf",
-                mime="application/pdf"
-            )
-
         except Exception as e:
             st.warning(f"Errore nell'elaborazione del bilancio {anno}: {e}")
+
+    if tabella_kpi:
+        st.markdown("## 🧾 Riepilogo KPI vs Benchmark")
+        df_kpi_finale = pd.DataFrame(tabella_kpi)
+
+        def evidenzia_valori(row):
+            style = []
+            style.append("background-color: #f8d7da" if row["EBITDA Margin"] < 10 else "background-color: #d4edda")
+            style.append("")
+            style.append("")
+            style.append("background-color: #f8d7da" if row["ROE"] < 5 else "background-color: #d4edda")
+            style.append("")
+            style.append("")
+            style.append("background-color: #f8d7da" if row["ROI"] < 5 else "background-color: #d4edda")
+            style.append("")
+            style.append("")
+            style.append("background-color: #f8d7da" if row["Current Ratio"] < 1 else "background-color: #d4edda")
+            style.append("")
+            style.append("")
+            style.append("")
+            return style
+
+        styled_df = df_kpi_finale.style.format("{:.2f}").apply(evidenzia_valori, axis=1)
+        st.dataframe(styled_df, use_container_width=True)
 else:
     st.info("Carica almeno un file Excel per iniziare.")
