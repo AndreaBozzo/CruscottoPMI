@@ -1,6 +1,6 @@
-# 📘 README – Cruscotto Finanziario per PMI
+# README – Cruscotto Finanziario per PMI
 
-## 🚀 Descrizione
+## Descrizione
 Applicazione interattiva realizzata con **Streamlit** per analizzare e visualizzare i principali indicatori economico-finanziari di bilancio delle PMI.
 
 Fornisce un **cruscotto dinamico** con:
@@ -12,23 +12,23 @@ Fornisce un **cruscotto dinamico** con:
 
 ---
 
-## 📂 Esempi di file di input
+## Esempi di file di input
 Puoi usare file Excel formattati con i seguenti fogli:
 
 - **Conto Economico**
 - **Attivo**
 - **Passivo**
 
-Sono inclusi file di esempio scaricabili da qui:
-👉 [Scarica il materiale di test su WeTransfer](https://we.tl/r-hBJzHc9kGg)
+Sono inclusi file di esempio nella repository:
+[`/test/Materiale_Test_CruscottoPMI`](./test/Materiale_Test_CruscottoPMI)
 
-Contenuto del pacchetto ZIP:
+Contenuto:
 - `Esempio_Bilancio_PMI_Multiano.xlsx`
 - `Benchmark_di_Settore.csv`
 
 ---
 
-## 🛠 Come eseguire l'app
+##  Come eseguire l'app
 Assicurati di avere Python installato. Poi esegui:
 
 ```bash
@@ -38,18 +38,18 @@ streamlit run app.py
 
 ---
 
-## 📊 Funzionalità principali
+##  Funzionalità principali
 - Caricamento multiplo di file Excel (analisi per anno)
 - Indicatori calcolati automaticamente
 - Confronto KPI vs Benchmark (default o da CSV)
 - Evidenziazione visiva dei KPI critici
 - Dashboard interattiva filtrabile (per KPI e anni)
 - Esportazione avanzata:
-  - ✅ Excel multi-anno
-  - ✅ PDF con logo, firma e valutazione sintetica
+  -  Excel multi-anno
+  -  PDF con logo, firma e valutazione sintetica
 
 ---
 
-## 👤 Autore
+##  Autore
 Realizzato da **Andrea Bozzo** – 2025  
 © Cruscotto Finanziario per PMI
