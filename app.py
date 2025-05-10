@@ -14,7 +14,6 @@ st.title("📊 Cruscotto Finanziario per PMI")
 uploaded_files = st.file_uploader("Carica uno o più file Excel del bilancio (uno per anno)", type=["xlsx"], accept_multiple_files=True)
 benchmark_file = st.file_uploader("Carica file CSV benchmark (facoltativo)", type=["csv"])
 
-# Benchmark di default
 benchmark_default = {
     "EBITDA Margin": 15.0,
     "ROE": 10.0,
@@ -22,7 +21,6 @@ benchmark_default = {
     "Current Ratio": 1.3
 }
 
-# Leggi benchmark personalizzato se presente
 if benchmark_file:
     df_benchmark = pd.read_csv(benchmark_file)
     benchmark = {row['KPI']: row['Valore'] for _, row in df_benchmark.iterrows()}
@@ -49,21 +47,10 @@ if uploaded_files:
     tabella_kpi = []
 
     for anno, dati in sorted(bilanci.items()):
-        st.header(f"📅 Bilancio {anno}")
         df_ce = dati["ce"]
         df_attivo = dati["attivo"]
         df_passivo = dati["passivo"]
 
-        st.subheader("Conto Economico")
-        st.dataframe(df_ce)
-
-        st.subheader("Stato Patrimoniale - Attivo")
-        st.dataframe(df_attivo)
-
-        st.subheader("Stato Patrimoniale - Passivo")
-        st.dataframe(df_passivo)
-
-        # Estrazione valori chiave
         try:
             ricavi = df_ce.loc[df_ce["Voce"] == "Ricavi", "Importo (€)"].values[0]
             utile_netto = df_ce.loc[df_ce["Voce"] == "Utile netto", "Importo (€)"].values[0]
@@ -72,7 +59,7 @@ if uploaded_files:
             current_ratio = round(liquidita / debiti_brevi, 2)
 
             ebit = df_ce.loc[df_ce["Voce"] == "EBIT", "Importo (€)"].values[0]
-            ebitda = ebit + df_ce.loc[df_ce["Voce"] == "Spese operative", "Importo (€)"].values[0]  # approssimazione
+            ebitda = ebit + df_ce.loc[df_ce["Voce"] == "Spese operative", "Importo (€)"].values[0]
 
             patrimonio_netto = df_passivo.loc[df_passivo["Passività e Patrimonio Netto"] == "Patrimonio netto", "Importo (€)"].values[0]
             totale_attivo = df_attivo["Importo (€)"].sum()
@@ -81,31 +68,11 @@ if uploaded_files:
             roe = round(utile_netto / patrimonio_netto * 100, 2)
             roi = round(ebit / totale_attivo * 100, 2)
 
-            # Valutazione sintetica
             valutazione = "Ottima solidità ✅"
-            if any([
-                ebitda_margin < 10,
-                roe < 5,
-                roi < 5,
-                current_ratio < 1
-            ]):
+            if any([ebitda_margin < 10, roe < 5, roi < 5, current_ratio < 1]):
                 valutazione = "⚠️ Attenzione: alcuni indici critici"
-            if all([
-                ebitda_margin < 10,
-                roe < 5,
-                roi < 5,
-                current_ratio < 1
-            ]):
+            if all([ebitda_margin < 10, roe < 5, roi < 5, current_ratio < 1]):
                 valutazione = "❌ Situazione critica"
-
-            st.markdown(f"### 🧠 Valutazione sintetica: {valutazione}")
-
-            st.markdown("## 📌 Indicatori di Redditività")
-            col1, col2, col3 = st.columns(3)
-            col1.metric("EBITDA Margin", f"{ebitda_margin} %", delta=f"{ebitda_margin - benchmark['EBITDA Margin']:.2f}%")
-            col2.metric("ROE", f"{roe} %", delta=f"{roe - benchmark['ROE']:.2f}%")
-            col3.metric("ROI", f"{roi} %", delta=f"{roi - benchmark['ROI']:.2f}%")
-            st.metric("Current Ratio", f"{current_ratio}", delta=f"{current_ratio - benchmark['Current Ratio']:.2f}")
 
             tabella_kpi.append({
                 "Anno": anno,
@@ -124,50 +91,68 @@ if uploaded_files:
                 "Valutazione": valutazione
             })
 
-            st.markdown("## 📈 Ricavi e Utile Netto")
-            bar_fig = px.bar(
-                x=["Ricavi", "Utile Netto"],
-                y=[ricavi, utile_netto],
-                labels={"x": "Voce", "y": "Importo (€)"},
-                color=["Ricavi", "Utile Netto"],
-                text=[ricavi, utile_netto]
-            )
-            st.plotly_chart(bar_fig, use_container_width=True)
-
-            st.markdown("## 🧩 Composizione Attivo e Passivo")
-            col1, col2 = st.columns(2)
-
-            fig_attivo = px.pie(df_attivo, names="Attività", values="Importo (€)", title="Attivo")
-            col1.plotly_chart(fig_attivo, use_container_width=True)
-
-            fig_passivo = px.pie(df_passivo, names="Passività e Patrimonio Netto", values="Importo (€)", title="Passivo")
-            col2.plotly_chart(fig_passivo, use_container_width=True)
-
         except Exception as e:
             st.warning(f"Errore nell'elaborazione del bilancio {anno}: {e}")
 
     if tabella_kpi:
-        st.markdown("## 🧾 Riepilogo KPI vs Benchmark")
         df_kpi_finale = pd.DataFrame(tabella_kpi)
 
-        def evidenzia_valori(row):
-            style = []
-            style.append("background-color: #f8d7da" if row["EBITDA Margin"] < 10 else "background-color: #d4edda")
-            style.append("")
-            style.append("")
-            style.append("background-color: #f8d7da" if row["ROE"] < 5 else "background-color: #d4edda")
-            style.append("")
-            style.append("")
-            style.append("background-color: #f8d7da" if row["ROI"] < 5 else "background-color: #d4edda")
-            style.append("")
-            style.append("")
-            style.append("background-color: #f8d7da" if row["Current Ratio"] < 1 else "background-color: #d4edda")
-            style.append("")
-            style.append("")
-            style.append("")
-            return style
+        st.markdown("## 📤 Esportazione Report Multi-anno")
 
-        styled_df = df_kpi_finale.style.format("{:.2f}").apply(evidenzia_valori, axis=1)
-        st.dataframe(styled_df, use_container_width=True)
+        buffer_xlsx = BytesIO()
+        with pd.ExcelWriter(buffer_xlsx, engine="xlsxwriter") as writer:
+            df_kpi_finale.to_excel(writer, sheet_name="KPI_vs_Benchmark", index=False)
+        st.download_button(
+            label="📥 Scarica report Excel multi-anno",
+            data=buffer_xlsx.getvalue(),
+            file_name="report_multianno.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+        def genera_pdf_multianno(df, logo_path):
+            buffer = BytesIO()
+            c = canvas.Canvas(buffer, pagesize=A4)
+            width, height = A4
+            if os.path.exists(logo_path):
+                c.drawImage(logo_path, 2 * cm, height - 3.5 * cm, width=3 * cm, preserveAspectRatio=True)
+            c.setFont("Helvetica-Bold", 16)
+            c.drawString(6 * cm, height - 2.5 * cm, "Report Finanziario Multi-Anno")
+            y = height - 4.5 * cm
+            c.setFont("Helvetica", 11)
+
+            for _, row in df.sort_values("Anno").iterrows():
+                c.drawString(2 * cm, y, f"Anno: {row['Anno']}")
+                y -= 0.6 * cm
+                c.drawString(2 * cm, y, f"EBITDA Margin: {row['EBITDA Margin']}%")
+                y -= 0.6 * cm
+                c.drawString(2 * cm, y, f"ROE: {row['ROE']}%")
+                y -= 0.6 * cm
+                c.drawString(2 * cm, y, f"ROI: {row['ROI']}%")
+                y -= 0.6 * cm
+                c.drawString(2 * cm, y, f"Current Ratio: {row['Current Ratio']}")
+                y -= 0.6 * cm
+                c.drawString(2 * cm, y, f"Valutazione: {row['Valutazione']}")
+                y -= 1.0 * cm
+                if y < 5 * cm:
+                    c.setFont("Helvetica-Oblique", 8)
+                    c.drawString(2 * cm, 2 * cm, "© 2025 Andrea Bozzo – Cruscotto Finanziario per PMI")
+                    c.showPage()
+                    y = height - 4.5 * cm
+                    c.setFont("Helvetica", 11)
+
+            c.setFont("Helvetica-Oblique", 8)
+            c.drawString(2 * cm, 2 * cm, "© 2025 Andrea Bozzo – Cruscotto Finanziario per PMI")
+            c.save()
+            buffer.seek(0)
+            return buffer
+
+        logo_path = "A_logo_for_Andrea_Bozzo_is_depicted_in_the_image,_.png"
+        buffer_pdf = genera_pdf_multianno(df_kpi_finale, logo_path)
+        st.download_button(
+            label="📄 Scarica report PDF multi-anno",
+            data=buffer_pdf,
+            file_name="report_multianno.pdf",
+            mime="application/pdf"
+        )
 else:
     st.info("Carica almeno un file Excel per iniziare.")
