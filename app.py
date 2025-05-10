@@ -105,7 +105,7 @@ if uploaded_files:
                 "Current Ratio": "background-color: #f8d7da" if row["Current Ratio"] < 1 else "background-color: #d4edda"
             })
 
-                numeriche = [
+        numeriche = [
             "EBITDA Margin", "Benchmark EBITDA", "Δ EBITDA",
             "ROE", "Benchmark ROE", "Δ ROE",
             "ROI", "Benchmark ROI", "Δ ROI",
