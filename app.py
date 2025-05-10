@@ -36,8 +36,12 @@ if uploaded_files:
             df_ce = pd.read_excel(file, sheet_name="Conto Economico")
             df_attivo = pd.read_excel(file, sheet_name="Attivo")
             df_passivo = pd.read_excel(file, sheet_name="Passivo")
-            anno = file.name.split("_")[0] if "_" in file.name else file.name.replace(".xlsx", "")
-            bilanci[anno] = {
+            nome_split = file.name.replace(".xlsx", "").split("_")
+            if len(nome_split) == 2:
+                azienda, anno = nome_split
+            else:
+                azienda, anno = "Sconosciuta", nome_split[0]
+            bilanci[(azienda, anno)] = {
                 "ce": df_ce,
                 "attivo": df_attivo,
                 "passivo": df_passivo
@@ -47,7 +51,7 @@ if uploaded_files:
 
     tabella_kpi = []
 
-    for anno, dati in sorted(bilanci.items()):
+    for (azienda, anno), dati in sorted(bilanci.items()):
         df_ce = dati["ce"]
         df_attivo = dati["attivo"]
         df_passivo = dati["passivo"]
@@ -73,7 +77,8 @@ if uploaded_files:
             if all([ebitda_margin < 10, roe < 5, roi < 5, current_ratio < 1]):
                 valutazione = "❌ Situazione critica"
 
-            tabella_kpi.append({
+                                    tabella_kpi.append({
+                "Azienda": azienda,
                 "Anno": anno,
                 "EBITDA Margin": ebitda_margin,
                 "Benchmark EBITDA": benchmark["EBITDA Margin"],
@@ -94,6 +99,18 @@ if uploaded_files:
 
     if tabella_kpi:
         df_kpi_finale = pd.DataFrame(tabella_kpi)
+
+        # Calcolo indice sintetico per classifica aziende
+        df_kpi_finale['Indice Sintetico'] = (
+            df_kpi_finale[['EBITDA Margin', 'ROE', 'ROI', 'Current Ratio']]
+            .apply(lambda row: sum([
+                row['EBITDA Margin'] / benchmark['EBITDA Margin'],
+                row['ROE'] / benchmark['ROE'],
+                row['ROI'] / benchmark['ROI'],
+                row['Current Ratio'] / benchmark['Current Ratio']
+            ]) / 4, axis=1) * 10  # Scala da 0 a 10
+        ).round(1)
+        )
 
         st.markdown("## 🧾 Riepilogo KPI vs Benchmark")
 
@@ -122,8 +139,26 @@ if uploaded_files:
 
         st.markdown("## 📊 Andamento KPI selezionati")
         if anni_sel and kpi_sel:
-            df_plot = df_kpi_finale[df_kpi_finale["Anno"].isin(anni_sel)][["Anno"] + kpi_sel].set_index("Anno")
-            st.line_chart(df_plot.sort_index())
+            df_plot = df_kpi_finale[df_kpi_finale["Anno"].isin(anni_sel)][["Anno", "Azienda"] + kpi_sel]
+            for kpi in kpi_sel:
+                fig = px.line(df_plot, x="Anno", y=kpi, color="Azienda", markers=True, title=f"Andamento {kpi} per Azienda")
+                st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("## 🏢 Confronto KPI tra Aziende")
+        aziende_sel = st.sidebar.multiselect("Seleziona azienda/e", df_kpi_finale["Azienda"].unique(), default=df_kpi_finale["Azienda"].unique())
+        if aziende_sel and kpi_sel:
+            df_aziende = df_kpi_finale[df_kpi_finale["Azienda"].isin(aziende_sel)][["Azienda"] + kpi_sel]
+            for kpi in kpi_sel:
+                fig_bar = px.bar(df_aziende, x="Azienda", y=kpi, color="Azienda", barmode="group", title=f"Confronto {kpi} per Azienda")
+                st.plotly_chart(fig_bar, use_container_width=True)
+
+        st.markdown("## 🏆 Classifica Aziende per Indice Sintetico")
+        st.caption("L’indice sintetico rappresenta la media normalizzata dei principali KPI rispetto ai benchmark: un valore > 10 indica performance superiori alla media attesa.")
+        classifica_df = df_kpi_finale.groupby("Azienda")["Indice Sintetico"].mean().sort_values(ascending=False).reset_index()
+        fig_score = px.bar(classifica_df, x="Azienda", y="Indice Sintetico", text="Indice Sintetico", title="Indice medio sintetico per Azienda")
+        st.plotly_chart(fig_score, use_container_width=True)
+        top_azienda = classifica_df.iloc[0]["Azienda"]
+        st.success(f"🏅 L’azienda con la miglior solidità media è: {top_azienda}")
 
         st.markdown("## 📤 Esporta report multi-anno")
         buffer_xlsx = BytesIO()
