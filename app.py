@@ -109,10 +109,6 @@ if uploaded_files:
         st.markdown("## 🧾 Riepilogo KPI vs Benchmark (con evidenziazione)")
         st.dataframe(styled_df, use_container_width=True)
 
-
-    styled_df = df_kpi_finale.style.format("{:.2f}", na_rep="-").apply(evidenzia_valori, axis=1)
-    st.dataframe(styled_df, use_container_width=True)
-
         st.sidebar.markdown("## 🔍 Filtri Dashboard")
         anni_sel = st.sidebar.multiselect("Seleziona anno/i", df_kpi_finale["Anno"].unique(), default=df_kpi_finale["Anno"].unique())
         kpi_sel = st.sidebar.multiselect("Seleziona KPI", ["EBITDA Margin", "ROE", "ROI", "Current Ratio"], default=["EBITDA Margin", "ROE"])
@@ -159,3 +155,4 @@ if uploaded_files:
         st.download_button("📄 Scarica PDF", pdf_buffer, "report_multianno.pdf")
 else:
     st.info("Carica almeno un file Excel per iniziare.")
+
