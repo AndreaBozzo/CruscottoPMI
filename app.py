@@ -101,8 +101,21 @@ if uploaded_files:
         })
 
     st.markdown("## 🧾 Riepilogo KPI con Benchmark")
-    styled_df = df_kpi_finale.style.format("{:.2f}", na_rep="-").apply(evidenzia_valori, axis=1)
-    st.dataframe(styled_df, use_container_width=True)
+    colonne_numeriche = [
+       "EBITDA Margin", "Benchmark EBITDA", "Δ EBITDA",
+       "ROE", "Benchmark ROE", "Δ ROE",
+       "ROI", "Benchmark ROI", "Δ ROI",
+       "Current Ratio", "Benchmark Current", "Δ Current",
+       "Indice Sintetico"
+   ]
+
+   # Crea il dizionario solo con le colonne presenti
+   formato = {col: "{:.2f}" for col in colonne_numeriche if col in df_kpi_finale.columns}
+
+   styled_df = df_kpi_finale.style.format(formato, na_rep="-").apply(evidenzia_valori, axis=1)
+   st.dataframe(styled_df, use_container_width=True)
+    
+    
 
     if anni_sel and kpi_sel:
         st.markdown("## 📈 Andamento KPI Selezionati")
