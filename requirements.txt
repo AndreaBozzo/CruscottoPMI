@@ -1,8 +1,8 @@
 # CruscottoPMI requirements
 
-streamlit>=1.30.0
-pandas>=2.1.0
-plotly>=5.18.0
-openpyxl>=3.1.2
-xlsxwriter>=3.1.0
-reportlab>=4.0.0
+streamlit>=1.20.0
+pandas>=1.3.0
+plotly>=5.0.0
+reportlab>=3.6.0
+openpyxl>=3.0.0
+xlsxwriter>=3.0.0
