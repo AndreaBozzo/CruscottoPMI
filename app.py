@@ -8,69 +8,83 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
 
-st.set_page_config(page_title="Cruscotto Finanziario PMI", layout="wide")
-st.title("\U0001F4CA Cruscotto Finanziario per PMI")
 
-uploaded_file = st.file_uploader("Carica il file Excel del bilancio", type=["xlsx"])
+st.set_page_config(page_title="Cruscotto Finanziario PMI", layout="wide")
+st.title("📊 Cruscotto Finanziario per PMI")
+
+uploaded_file = st.file_uploader("Carica il file Excel con più anni", type=["xlsx"])
 
 if uploaded_file:
-    try:
-        df_ce = pd.read_excel(uploaded_file, sheet_name="Conto Economico")
-        df_attivo = pd.read_excel(uploaded_file, sheet_name="Attivo")
-        df_passivo = pd.read_excel(uploaded_file, sheet_name="Passivo")
-    except Exception as e:
-        st.error(f"Errore nel caricamento del file: {e}")
-    else:
-        st.subheader("Conto Economico")
-        st.dataframe(df_ce)
+    # Leggi i tre fogli con colonna "Anno"
+    df_ce = pd.read_excel(uploaded_file, sheet_name="Conto Economico")
+    df_attivo = pd.read_excel(uploaded_file, sheet_name="Attivo")
+    df_passivo = pd.read_excel(uploaded_file, sheet_name="Passivo")
 
-        st.subheader("Stato Patrimoniale - Attivo")
-        st.dataframe(df_attivo)
+    # Estrai anni disponibili
+    anni_disponibili = sorted(df_ce["Anno"].unique(), reverse=True)
+    anno_scelto = st.selectbox("Seleziona l'anno da analizzare", anni_disponibili)
 
-        st.subheader("Stato Patrimoniale - Passivo")
-        st.dataframe(df_passivo)
+    # Filtra per anno scelto
+    df_ce_anno = df_ce[df_ce["Anno"] == anno_scelto]
+    df_attivo_anno = df_attivo[df_attivo["Anno"] == anno_scelto]
+    df_passivo_anno = df_passivo[df_passivo["Anno"] == anno_scelto]
 
-        # Estrazione valori
-        ricavi = df_ce.loc[df_ce["Voce"] == "Ricavi", "Importo (€)"].values[0]
-        utile_netto = df_ce.loc[df_ce["Voce"] == "Utile netto", "Importo (€)"].values[0]
-        liquidità = df_attivo.loc[df_attivo["Attività"] == "Disponibilità liquide", "Importo (€)"].values[0]
-        debiti_brevi = df_passivo.loc[df_passivo["Passività e Patrimonio Netto"] == "Debiti a breve", "Importo (€)"].values[0]
-        current_ratio = round(liquidità / debiti_brevi, 2)
+    # Mostra i dati filtrati
+    st.subheader(f"Conto Economico ({anno_scelto})")
+    st.dataframe(df_ce_anno)
 
-        ebit = df_ce.loc[df_ce["Voce"] == "EBIT", "Importo (€)"].values[0]
-        ebitda = ebit + df_ce.loc[df_ce["Voce"] == "Spese operative", "Importo (€)"].values[0]
+    st.subheader(f"Stato Patrimoniale - Attivo ({anno_scelto})")
+    st.dataframe(df_attivo_anno)
 
-        patrimonio_netto = df_passivo.loc[df_passivo["Passività e Patrimonio Netto"] == "Patrimonio netto", "Importo (€)"].values[0]
-        totale_attivo = df_attivo["Importo (€)"].sum()
+    st.subheader(f"Stato Patrimoniale - Passivo ({anno_scelto})")
+    st.dataframe(df_passivo_anno)
 
-        ebitda_margin = round(ebitda / ricavi * 100, 2)
-        roe = round(utile_netto / patrimonio_netto * 100, 2)
-        roi = round(ebit / totale_attivo * 100, 2)
+# --- Estrazione Valori e KPI ---
+ricavi = df_ce_anno.loc[df_ce_anno["Voce"] == "Ricavi", "Importo (€)"].values[0]
+utile_netto = df_ce_anno.loc[df_ce_anno["Voce"] == "Utile netto", "Importo (€)"].values[0]
+ebit = df_ce_anno.loc[df_ce_anno["Voce"] == "EBIT", "Importo (€)"].values[0]
+spese_oper = df_ce_anno.loc[df_ce_anno["Voce"] == "Spese operative", "Importo (€)"].values[0]
 
-        st.markdown("## \U0001F4CC Indicatori di Redditività")
-        col1, col2, col3 = st.columns(3)
-        col1.metric("EBITDA Margin", f"{ebitda_margin} %")
-        col2.metric("ROE", f"{roe} %")
-        col3.metric("ROI", f"{roi} %")
+liquidità = df_attivo_anno.loc[df_attivo_anno["Attività"] == "Disponibilità liquide", "Importo (€)"].values[0]
+debiti_brevi = df_passivo_anno.loc[df_passivo_anno["Passività e Patrimonio Netto"] == "Debiti a breve", "Importo (€)"].values[0]
+patrimonio_netto = df_passivo_anno.loc[df_passivo_anno["Passività e Patrimonio Netto"] == "Patrimonio netto", "Importo (€)"].values[0]
+totale_attivo = df_attivo_anno["Importo (€)"].sum()
 
-        # Grafico a barre
-        st.markdown("## \U0001F4C8 Ricavi e Utile Netto")
-        bar_fig = px.bar(
-            x=["Ricavi", "Utile Netto"],
-            y=[ricavi, utile_netto],
-            labels={"x": "Voce", "y": "Importo (€)"},
-            color=["Ricavi", "Utile Netto"],
-            text=[ricavi, utile_netto]
-        )
-        st.plotly_chart(bar_fig, use_container_width=True)
+# KPI
+current_ratio = round(liquidità / debiti_brevi, 2)
+ebitda = ebit + spese_oper
+ebitda_margin = round(ebitda / ricavi * 100, 2)
+roe = round(utile_netto / patrimonio_netto * 100, 2)
+roi = round(ebit / totale_attivo * 100, 2)
 
-        # Grafici a torta
-        st.markdown("## 🧩 Composizione Attivo e Passivo")
-        col1, col2 = st.columns(2)
-        fig_attivo = px.pie(df_attivo, names="Attività", values="Importo (€)", title="Attivo")
-        fig_passivo = px.pie(df_passivo, names="Passività e Patrimonio Netto", values="Importo (€)", title="Passivo")
-        col1.plotly_chart(fig_attivo, use_container_width=True)
-        col2.plotly_chart(fig_passivo, use_container_width=True)
+st.markdown(f"## 📌 Indicatori di Redditività ({anno_scelto})")
+col1, col2, col3 = st.columns(3)
+col1.metric("EBITDA Margin", f"{ebitda_margin} %")
+col2.metric("ROE", f"{roe} %")
+col3.metric("ROI", f"{roi} %")
+
+# --- 📊 GRAFICO A BARRE ---
+st.markdown(f"## 📈 Ricavi e Utile Netto ({anno_scelto})")
+import plotly.express as px
+bar_fig = px.bar(
+    x=["Ricavi", "Utile Netto"],
+    y=[ricavi, utile_netto],
+    labels={"x": "Voce", "y": "Importo (€)"},
+    color=["Ricavi", "Utile Netto"],
+    text=[ricavi, utile_netto]
+)
+st.plotly_chart(bar_fig, use_container_width=True)
+
+# --- 🧩 GRAFICI A TORTA ---
+st.markdown(f"## 🧩 Composizione Attivo e Passivo ({anno_scelto})")
+col1, col2 = st.columns(2)
+
+fig_attivo = px.pie(df_attivo_anno, names="Attività", values="Importo (€)", title="Attivo")
+col1.plotly_chart(fig_attivo, use_container_width=True)
+
+fig_passivo = px.pie(df_passivo_anno, names="Passività e Patrimonio Netto", values="Importo (€)", title="Passivo")
+col2.plotly_chart(fig_passivo, use_container_width=True)
+
 
         # Esportazione Excel
         st.markdown("## \U0001F4E4 Esporta il Report")
