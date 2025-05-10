@@ -19,8 +19,7 @@ Puoi usare file Excel formattati con i seguenti fogli:
 - **Attivo**
 - **Passivo**
 
-Sono inclusi file di esempio nella repository:
-[`/test/Materiale_Test_CruscottoPMI`](./test/Materiale_Test_CruscottoPMI)
+Sono inclusi file di esempio nella repository
 
 Contenuto:
 - `Esempio_Bilancio_PMI_Multiano.xlsx`
