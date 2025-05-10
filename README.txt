@@ -1,54 +1,55 @@
-# README – Cruscotto Finanziario per PMI
+# Cruscotto Finanziario per PMI - README
 
 ## Descrizione
-Applicazione interattiva realizzata con **Streamlit** per analizzare e visualizzare i principali indicatori economico-finanziari di bilancio delle PMI.
+Applicazione Streamlit per l’analisi finanziaria di PMI attraverso l’importazione di bilanci in formato Excel. Consente il confronto multi-anno e multi-azienda, con calcolo KPI, benchmark, grafici dinamici, esportazioni e classifiche sintetiche.
 
-Fornisce un **cruscotto dinamico** con:
-- KPI di redditività (EBITDA Margin, ROE, ROI, Current Ratio)
-- Grafici interattivi
-- Confronto con benchmark di settore
-- Valutazione sintetica dello stato aziendale
-- Esportazione PDF/Excel dei report (multi-anno)
+## Funzionalità principali
+- 📂 Caricamento multiplo di bilanci Excel (multi-anno, multi-azienda)
+- 📊 Calcolo KPI: EBITDA Margin, ROE, ROI, Current Ratio
+- 🧠 Calcolo indice sintetico (normalizzato su 10) per classificare la solidità aziendale
+- 🎯 Benchmark personalizzabile da CSV
+- 🧾 Evidenziazione condizionale su KPI critici
+- 📉 Visualizzazione dinamica di voci di bilancio chiave (Ricavi, Spese Operative, Ammortamenti, MOL...)
+- 🏆 Classifica aziende per performance media
+- 📤 Esportazione dei risultati in Excel (multi-foglio) e PDF (con logo incluso)
 
----
+## Esempi di test
+Abbiamo incluso nel repository i seguenti file di esempio:
 
-## Esempi di file di input
-Puoi usare file Excel formattati con i seguenti fogli:
+```
+📁 dati_test/
+├── Alpha_2023.xlsx
+├── Alpha_2024.xlsx
+├── Beta_2023.xlsx
+├── Beta_2024.xlsx
+└── benchmark_kpi.csv (opzionale)
+```
 
-- **Conto Economico**
-- **Attivo**
-- **Passivo**
+## Requisiti
+- Python >= 3.8
+- Streamlit
+- Plotly
+- Pandas
+- ReportLab
 
-Sono inclusi file di esempio nella repository
-
-Contenuto:
-- `Esempio_Bilancio_PMI_Multiano.xlsx`
-- `Benchmark_di_Settore.csv`
-
----
-
-##  Come eseguire l'app
-Assicurati di avere Python installato. Poi esegui:
-
+## Avvio locale
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
----
+## Note
+Per aggiungere ulteriori aziende o anni, basta nominare i file Excel con il formato: `Azienda_Anno.xlsx` e strutturarli con i fogli:
+- `Conto Economico`
+- `Attivo`
+- `Passivo`
 
-##  Funzionalità principali
-- Caricamento multiplo di file Excel (analisi per anno)
-- Indicatori calcolati automaticamente
-- Confronto KPI vs Benchmark (default o da CSV)
-- Evidenziazione visiva dei KPI critici
-- Dashboard interattiva filtrabile (per KPI e anni)
-- Esportazione avanzata:
-  -  Excel multi-anno
-  -  PDF con logo, firma e valutazione sintetica
+Il file `benchmark_kpi.csv` opzionale deve avere questa struttura:
+```csv
+KPI,Valore
+EBITDA Margin,15.0
+ROE,10.0
+ROI,8.0
+Current Ratio,1.3
+```
 
----
-
-##  Autore
-Realizzato da **Andrea Bozzo** – 2025  
-© Cruscotto Finanziario per PMI
