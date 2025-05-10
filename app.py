@@ -103,18 +103,22 @@ if uploaded_files:
         colori["EBITDA Margin"] = "background-color: #f8d7da"
     else:
         colori["EBITDA Margin"] = "background-color: #d4edda"
+
     if row["ROE"] < 5:
         colori["ROE"] = "background-color: #f8d7da"
     else:
         colori["ROE"] = "background-color: #d4edda"
+
     if row["ROI"] < 5:
         colori["ROI"] = "background-color: #f8d7da"
     else:
         colori["ROI"] = "background-color: #d4edda"
+
     if row["Current Ratio"] < 1:
         colori["Current Ratio"] = "background-color: #f8d7da"
     else:
         colori["Current Ratio"] = "background-color: #d4edda"
+
     return pd.Series(colori)
 
         styled_df = df_kpi_finale.style.format("{:.2f}", na_rep="-").apply(evidenzia_valori, axis=1)
