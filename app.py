@@ -97,13 +97,18 @@ if uploaded_files:
 
         st.markdown("## 🧾 Riepilogo KPI vs Benchmark")
 
-        def evidenzia_valori(row):
-    return pd.Series({
-        "EBITDA Margin": "background-color: #f8d7da" if row["EBITDA Margin"] < 10 else "background-color: #d4edda",
-        "ROE": "background-color: #f8d7da" if row["ROE"] < 5 else "background-color: #d4edda",
-        "ROI": "background-color: #f8d7da" if row["ROI"] < 5 else "background-color: #d4edda",
-        "Current Ratio": "background-color: #f8d7da" if row["Current Ratio"] < 1 else "background-color: #d4edda"
-    })
+                def evidenzia_valori(row):
+            return pd.Series({
+                "EBITDA Margin": "background-color: #f8d7da" if row["EBITDA Margin"] < 10 else "background-color: #d4edda",
+                "ROE": "background-color: #f8d7da" if row["ROE"] < 5 else "background-color: #d4edda",
+                "ROI": "background-color: #f8d7da" if row["ROI"] < 5 else "background-color: #d4edda",
+                "Current Ratio": "background-color: #f8d7da" if row["Current Ratio"] < 1 else "background-color: #d4edda"
+            })
+
+        styled_df = df_kpi_finale.style.format("{:.2f}", na_rep="-").apply(evidenzia_valori, axis=1)
+        st.markdown("## 🧾 Riepilogo KPI vs Benchmark (con evidenziazione)")
+        st.dataframe(styled_df, use_container_width=True)
+
 
     styled_df = df_kpi_finale.style.format("{:.2f}", na_rep="-").apply(evidenzia_valori, axis=1)
     st.dataframe(styled_df, use_container_width=True)
