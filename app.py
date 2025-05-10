@@ -97,7 +97,7 @@ if uploaded_files:
 
         st.markdown("## 🧾 Riepilogo KPI vs Benchmark")
 
-                def evidenzia_valori(row):
+        def evidenzia_valori(row):
             return pd.Series({
                 "EBITDA Margin": "background-color: #f8d7da" if row["EBITDA Margin"] < 10 else "background-color: #d4edda",
                 "ROE": "background-color: #f8d7da" if row["ROE"] < 5 else "background-color: #d4edda",
