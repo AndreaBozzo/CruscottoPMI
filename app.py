@@ -77,7 +77,7 @@ if uploaded_files:
             if all([ebitda_margin < 10, roe < 5, roi < 5, current_ratio < 1]):
                 valutazione = "❌ Situazione critica"
 
-                                    tabella_kpi.append({
+            tabella_kpi.append({
                 "Azienda": azienda,
                 "Anno": anno,
                 "EBITDA Margin": ebitda_margin,
