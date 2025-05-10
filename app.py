@@ -98,21 +98,24 @@ if uploaded_files:
         st.markdown("## 🧾 Riepilogo KPI vs Benchmark")
 
         def evidenzia_valori(row):
-            colori = []
-            colori.append("background-color: #f8d7da" if row["EBITDA Margin"] < 10 else "background-color: #d4edda")
-            colori.append("")
-            colori.append("")
-            colori.append("background-color: #f8d7da" if row["ROE"] < 5 else "background-color: #d4edda")
-            colori.append("")
-            colori.append("")
-            colori.append("background-color: #f8d7da" if row["ROI"] < 5 else "background-color: #d4edda")
-            colori.append("")
-            colori.append("")
-            colori.append("background-color: #f8d7da" if row["Current Ratio"] < 1 else "background-color: #d4edda")
-            colori.append("")
-            colori.append("")
-            colori.append("")
-            return colori
+    colori = {}
+    if row["EBITDA Margin"] < 10:
+        colori["EBITDA Margin"] = "background-color: #f8d7da"
+    else:
+        colori["EBITDA Margin"] = "background-color: #d4edda"
+    if row["ROE"] < 5:
+        colori["ROE"] = "background-color: #f8d7da"
+    else:
+        colori["ROE"] = "background-color: #d4edda"
+    if row["ROI"] < 5:
+        colori["ROI"] = "background-color: #f8d7da"
+    else:
+        colori["ROI"] = "background-color: #d4edda"
+    if row["Current Ratio"] < 1:
+        colori["Current Ratio"] = "background-color: #f8d7da"
+    else:
+        colori["Current Ratio"] = "background-color: #d4edda"
+    return pd.Series(colori)
 
         styled_df = df_kpi_finale.style.format("{:.2f}", na_rep="-").apply(evidenzia_valori, axis=1)
         st.dataframe(styled_df, use_container_width=True)
@@ -163,4 +166,3 @@ if uploaded_files:
         st.download_button("📄 Scarica PDF", pdf_buffer, "report_multianno.pdf")
 else:
     st.info("Carica almeno un file Excel per iniziare.")
-
