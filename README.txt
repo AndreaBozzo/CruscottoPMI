@@ -32,10 +32,19 @@ Abbiamo incluso nel repository i seguenti file di esempio:
 - Pandas
 - ReportLab
 
-## Avvio locale
+Per installare tutte le dipendenze richieste, puoi usare direttamente il file [`requirements.txt`](requirements.txt):
 ```bash
 pip install -r requirements.txt
+```
+
+## Avvio locale
+```bash
 streamlit run app.py
+```
+
+> 💡 Per avviare l'app su una porta specifica (es. 8502):
+```bash
+streamlit run app.py --server.port 8502
 ```
 
 ## Note
@@ -52,4 +61,3 @@ ROE,10.0
 ROI,8.0
 Current Ratio,1.3
 ```
-
