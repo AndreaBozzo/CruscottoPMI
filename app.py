@@ -1,4 +1,5 @@
-# Cruscotto Finanziario per PMI - Build Completa
+# Cruscotto Finanziario per PMI - Build Completa#
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -116,6 +117,17 @@ if uploaded_files:
         for voce in voci_sel:
             fig_voce = px.bar(df_voci_filtered, x="Anno", y=voce, color="Azienda", barmode="group", title=f"{voce} per Anno e Azienda")
             st.plotly_chart(fig_voce, use_container_width=True)
+
+        st.markdown("## 📉 Confronto Voci di Costo/Ricavo per Azienda")
+        voci_costo_ricavo = ["Ricavi", "Spese Operative", "Ammortamenti", "Oneri Finanziari"]
+        voci_analisi = [voce for voce in voci_costo_ricavo if voce in df_voci_finale.columns]
+
+        if voci_analisi:
+            for voce in voci_analisi:
+                fig_cr = px.bar(df_voci_finale[df_voci_finale["Anno"].isin(anni_sel)],
+                                x="Azienda", y=voce, color="Anno", barmode="group",
+                                title=f"{voce} - Confronto tra Aziende")
+                st.plotly_chart(fig_cr, use_container_width=True)
 
     st.markdown("## 🏆 Classifica Aziende per Indice Sintetico")
     classifica_df = df_kpi_finale.groupby("Azienda")["Indice Sintetico"].mean().sort_values(ascending=False).reset_index()
