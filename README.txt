@@ -1,18 +1,55 @@
-# Cruscotto Finanziario per PMI
+# 📘 README – Cruscotto Finanziario per PMI
 
-## Descrizione
+## 🚀 Descrizione
+Applicazione interattiva realizzata con **Streamlit** per analizzare e visualizzare i principali indicatori economico-finanziari di bilancio delle PMI.
 
-Questo progetto sviluppa un **Cruscotto Finanziario interattivo per le PMI**, utilizzando **Streamlit** e diverse librerie di visualizzazione dei dati come **Plotly** e **ReportLab**. L'app permette di visualizzare e analizzare i principali indicatori finanziari di un'azienda, tra cui il bilancio, l'andamento economico e l'analisi dei flussi di cassa. Gli utenti possono interagire con grafici dinamici e generare report in PDF per una visualizzazione e un'analisi approfondita.
+Fornisce un **cruscotto dinamico** con:
+- KPI di redditività (EBITDA Margin, ROE, ROI, Current Ratio)
+- Grafici interattivi
+- Confronto con benchmark di settore
+- Valutazione sintetica dello stato aziendale
+- Esportazione PDF/Excel dei report (multi-anno)
 
-### Funzionalità principali:
-- **Analisi del bilancio**: Visualizza e analizza il bilancio aziendale (Conto Economico, Stato Patrimoniale, ecc.).
-- **Indicatori Finanziari**: KPI e metriche per monitorare la performance dell'azienda.
-- **Grafici interattivi**: Grafici a barre, grafici a torta e altri strumenti visuali per esplorare i dati.
-- **Esportazione report**: Generazione di report PDF contenenti i grafici e i KPI aziendali.
+---
 
-## Come usare
+## 📂 Esempi di file di input
+Puoi usare file Excel formattati con i seguenti fogli:
 
-1. **Clona il repository**
-   ```bash
-   git clone https://github.com/AndreaBozzo/Portfolio.git
-   cd cruscottopmi
+- **Conto Economico**
+- **Attivo**
+- **Passivo**
+
+Sono inclusi file di esempio scaricabili da qui:
+👉 [Scarica il materiale di test su WeTransfer](https://we.tl/r-hBJzHc9kGg)
+
+Contenuto del pacchetto ZIP:
+- `Esempio_Bilancio_PMI_Multiano.xlsx`
+- `Benchmark_di_Settore.csv`
+
+---
+
+## 🛠 Come eseguire l'app
+Assicurati di avere Python installato. Poi esegui:
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+---
+
+## 📊 Funzionalità principali
+- Caricamento multiplo di file Excel (analisi per anno)
+- Indicatori calcolati automaticamente
+- Confronto KPI vs Benchmark (default o da CSV)
+- Evidenziazione visiva dei KPI critici
+- Dashboard interattiva filtrabile (per KPI e anni)
+- Esportazione avanzata:
+  - ✅ Excel multi-anno
+  - ✅ PDF con logo, firma e valutazione sintetica
+
+---
+
+## 👤 Autore
+Realizzato da **Andrea Bozzo** – 2025  
+© Cruscotto Finanziario per PMI
