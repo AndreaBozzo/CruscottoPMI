@@ -155,4 +155,3 @@ if uploaded_files:
         st.download_button("📄 Scarica PDF", pdf_buffer, "report_multianno.pdf")
 else:
     st.info("Carica almeno un file Excel per iniziare.")
-
