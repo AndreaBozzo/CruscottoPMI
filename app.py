@@ -110,7 +110,6 @@ if uploaded_files:
                 row['Current Ratio'] / benchmark['Current Ratio']
             ]) / 4, axis=1) * 10  # Scala da 0 a 10
         ).round(1)
-        )
 
         st.markdown("## 🧾 Riepilogo KPI vs Benchmark")
 
