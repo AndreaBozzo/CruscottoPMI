@@ -130,7 +130,7 @@ if not df_kpi.empty:
     # Δ YoY
     yoy = (
         df_kpi.set_index("Anno").groupby("Azienda")[kpi_cols+["Ricavi"]]
-        .pct
+        .pct)
 
     # Classifica
     st.markdown("## 🏆 Classifica Indice Sintetico")
