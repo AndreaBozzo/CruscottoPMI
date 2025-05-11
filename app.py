@@ -137,14 +137,16 @@ if tabella_kpi:
     st.dataframe(df_kpi.style.format(fmt_dict).apply(evid, axis=1), use_container_width=True)
 
     st.markdown("## 📉 Variazione Percentuale YoY")
+    
     yoy = (
-        df_kpi.set_index("Anno")
-        .groupby("Azienda")[kpi_cols + ["Ricavi"]]
-        .pct_change()
-        .dropna() * 100
-        .reset_index()
-        .rename(columns={c: f"∆% {c}" for c in kpi_cols + ["Ricavi"]})
+    df_kpi
+    .sort_values(["Azienda", "Anno"])
+    .groupby("Azienda", group_keys=False)[["Anno"] + kpi_cols + ["Ricavi"]]
+    .apply(lambda g: g.set_index("Anno").pct_change().dropna().reset_index())
+    .reset_index(drop=True)
+    .rename(columns={c: f"Δ% {c}" for c in kpi_cols + ["Ricavi"]})
     )
+
     st.dataframe(yoy, use_container_width=True)
 
     # Classifica
