@@ -60,7 +60,6 @@ if not demo_mode and uploaded_files:
 
 if demo_mode:
     st.info("Modalità demo: dati di esempio caricati.")
-    # Costruiamo DataFrame fittizi direttamente senza leggere da Excel
     demo_ce = pd.DataFrame({
         "Voce": ["Ricavi", "Utile netto", "EBIT", "Spese operative"],
         "Importo (€)": [1_200_000, 85_000, 90_000, 200_000],
@@ -73,12 +72,11 @@ if demo_mode:
         "Passività e Patrimonio Netto": ["Debiti a breve", "Patrimonio netto"],
         "Importo (€)": [85_000, 420_000],
     })
-
     bilanci = {
         ("Alpha Srl", 2022): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas},
     }
 
-# ─── ELABORAZIONE KPI (funzione con cache) ─────────── (funzione con cache) ───────────
+# ─── ELABORAZIONE KPI ─────────────────────────────────
 @st.cache_data(show_spinner=False)
 def calcola_kpi(ce, att, pas, benchmark):
     try:
@@ -128,11 +126,12 @@ for (azi, yr), dfs in bilanci.items():
 
 df_kpi = pd.DataFrame(tabella_kpi)
 
-# ─── DASHBOARD & EXPORT  (resto invariato tranne uso num_cols) ─────────
+# ─── DASHBOARD & EXPORT ───────────────────────────────
 if not df_kpi.empty:
     df_kpi.sort_values(["Azienda","Anno"], inplace=True)
     num_cols = df_kpi.select_dtypes(include="number").columns
     fmt_dict = {c: "{:.2f}" for c in num_cols}
+
     def evid(row):
         return pd.Series({
             "EBITDA Margin":"background-color:#f8d7da" if row["EBITDA Margin"]<10 else "background-color:#d4edda",
@@ -140,18 +139,20 @@ if not df_kpi.empty:
             "ROI":"background-color:#f8d7da" if row["ROI"]<5 else "background-color:#d4edda",
             "Current Ratio":"background-color:#f8d7da" if row["Current Ratio"]<1 else "background-color:#d4edda"
         })
+
     st.dataframe(df_kpi.style.format(fmt_dict).apply(evid, axis=1), use_container_width=True)
 
+    # Δ YoY
     yoy = (
-    df_kpi
-    .set_index("Anno")
-    .groupby("Azienda")[kpi_cols + ["Ricavi"]]
-    .pct_change()
-    .dropna() * 100
-    .reset_index()
-    .rename(columns={c: f"Δ% {c}" for c in kpi_cols + ["Ricavi"]})
+        df_kpi.set_index("Anno")
+        .groupby("Azienda")[kpi_cols + ["Ricavi"]]
+        .pct_change()
+        .dropna() * 100
+        .reset_index()
+        .rename(columns={c: f"Δ% {c}" for c in kpi_cols + ["Ricavi"]})
     )
 
+    st.dataframe(yoy, use_container_width=True)
     # Classifica
     st.markdown("## 🏆 Classifica Indice Sintetico")
     cls = df_kpi.groupby("Azienda")['Indice Sintetico'].mean().sort_values(ascending=False).reset_index()
