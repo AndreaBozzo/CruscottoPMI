@@ -7,7 +7,8 @@ from reportlab.lib.units import cm
 
 default_benchmark = {"EBITDA Margin": 15.0, "ROE": 10.0, "ROI": 8.0, "Current Ratio": 1.3}
 
-def load_benchmark(file):
+@st.cache_data(show_spinner=False)
+def load_benchmark(file, default_benchmark):
     if file is None:
         return default_benchmark.copy()
     df_bm = pd.read_csv(file)
