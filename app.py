@@ -180,4 +180,5 @@ if tabella_kpi:
                 c.drawString(2*cm,2*cm,"© 2025 Andrea Bozzo – Cruscotto PMI")
                 c.showPage();y=h-4.5*cm;c.setFont("Helvetica",11)
         c.setFont("Helvetica-Oblique",8)
-        c.drawString(2*cm,2*cm,"© 202)
+        c.drawString(2*cm,2*cm,"© 202
+                    )
