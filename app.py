@@ -116,9 +116,9 @@ for (azi, yr), dfs in bilanci.items():
     if "Errore" in row:
         st.warning(f"Errore su {azi} {yr}: {row['Errore']}")
         continue
-    row.update({"Azienda": azi, "Anno": int(yr)})
+    row.update({"Azienda": azi, "Anno": int(float(yr))})
     tabella_kpi.append(row)
-    tabella_voci.append({"Azienda": azi, "Anno": int(yr), **{k: row[k] for k in row if k not in kpi_cols+["Indice Sintetico","Valutazione","Azienda","Anno"]}})
+    tabella_voci.append({"Azienda": azi, "Anno": int(float(yr)), **{k: row[k] for k in row if k not in kpi_cols+["Indice Sintetico","Valutazione","Azienda","Anno"]}})
 
 df_kpi = pd.DataFrame(tabella_kpi)
 df_voci = pd.DataFrame(tabella_voci)
