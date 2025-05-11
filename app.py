@@ -123,6 +123,11 @@ for (azi, yr), dfs in bilanci.items():
 df_kpi = pd.DataFrame(tabella_kpi)
 df_voci = pd.DataFrame(tabella_voci)
 
+if not df_kpi.empty and "Anno" in df_kpi.columns:
+    df_kpi["Anno"] = df_kpi["Anno"].astype(int)
+if not df_voci.empty and "Anno" in df_voci.columns:
+    df_voci["Anno"] = df_voci["Anno"].astype(int)
+    
 # ─── DASHBOARD & EXPORT ───────────────────────────────
 if not df_kpi.empty:
     df_kpi.sort_values(["Azienda","Anno"], inplace=True)
