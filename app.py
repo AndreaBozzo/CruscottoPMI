@@ -167,18 +167,40 @@ if tabella_kpi:
 
     # Export PDF
     def g_pdf(df, logo="A_logo_for_Andrea_Bozzo_is_depicted_in_the_image,_.png"):
-        b=BytesIO();c=canvas.Canvas(b,pagesize=A4);w,h=A4
-        if os.path.exists(logo): c.drawImage(logo,2*cm,h-3.5*cm,3*cm,3*cm,mask='auto')
-        c.setFont("Helvetica-Bold",16);c.drawString(6*cm,h-2.5*cm,"Report Finanziario PMI")
-        y=h-4.5*cm;c.setFont("Helvetica",11)
-        for _,r in df.sort_values("Anno").iterrows():
-            for v in ["Anno","Azienda","EBITDA Margin","ROE","ROI","Current Ratio","Indice Sintetico","Valutazione"]:
-                c.drawString(2*cm,y,f"{v}: {r[v]}");y-=0.6*cm
-            y-=0.4*cm
-            if y<5*cm:
-                c.setFont("Helvetica-Oblique",8)
-                c.drawString(2*cm,2*cm,"© 2025 Andrea Bozzo – Cruscotto PMI")
-                c.showPage();y=h-4.5*cm;c.setFont("Helvetica",11)
-        c.setFont("Helvetica-Oblique",8)
-        c.drawString(2*cm,2*cm,"© 202
-                    )
+        buf = BytesIO()
+        c = canvas.Canvas(buf, pagesize=A4)
+        w, h = A4
+        if os.path.exists(logo):
+            c.drawImage(logo, 2 * cm, h - 3.5 * cm, 3 * cm, 3 * cm, mask="auto")
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(6 * cm, h - 2.5 * cm, "Report Finanziario PMI")
+        y = h - 4.5 * cm
+        c.setFont("Helvetica", 11)
+        for _, r in df.sort_values("Anno").iterrows():
+            for v in [
+                "Anno",
+                "Azienda",
+                "EBITDA Margin",
+                "ROE",
+                "ROI",
+                "Current Ratio",
+                "Indice Sintetico",
+                "Valutazione",
+            ]:
+                c.drawString(2 * cm, y, f"{v}: {r[v]}")
+                y -= 0.6 * cm
+            y -= 0.4 * cm
+            if y < 5 * cm:
+                c.setFont("Helvetica-Oblique", 8)
+                c.drawString(2 * cm, 2 * cm, "© 2025 Andrea Bozzo – Cruscotto PMI")
+                c.showPage()
+                y = h - 4.5 * cm
+                c.setFont("Helvetica", 11)
+        c.setFont("Helvetica-Oblique", 8)
+        c.drawString(2 * cm, 2 * cm, "© 2025 Andrea Bozzo – Cruscotto PMI")
+        c.save()
+        buf.seek(0)
+        return buf
+
+    st.download_button("📄 PDF", g_pdf(df_kpi), "report_finanziario.pdf")
+
