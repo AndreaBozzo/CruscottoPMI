@@ -12,7 +12,11 @@ from reportlab.lib.units import cm
 st.set_page_config(page_title="Cruscotto Finanziario PMI", layout="wide")
 st.title("📊 Cruscotto Finanziario per PMI")
 
-uploaded_files = st.file_uploader("Carica uno o più file Excel del bilancio (uno per anno)", type=["xlsx"], accept_multiple_files=True)
+demo_mode = st.checkbox("🔍 Usa dati di esempio", value=False)
+
+uploaded_files = None
+if not demo_mode:
+    uploaded_files = st.file_uploader("Carica uno o più file Excel del bilancio (uno per anno)", type=["xlsx"], accept_multiple_files=True)", type=["xlsx"], accept_multiple_files=True)
 benchmark_file = st.file_uploader("Carica file CSV benchmark (facoltativo)", type=["csv"])
 
 benchmark_default = {"EBITDA Margin": 15.0, "ROE": 10.0, "ROI": 8.0, "Current Ratio": 1.3}
@@ -22,7 +26,53 @@ if benchmark_file:
 else:
     benchmark = benchmark_default
 
-if uploaded_files:
+if demo_mode:
+    st.info("Modalità demo attiva: vengono caricati dati fittizi di esempio.")
+    from datetime import datetime
+    demo_data = [
+        {"Azienda": "Alpha Srl", "Anno": 2022, "Ricavi": 1200000, "Utile netto": 85000, "EBIT": 90000, "Spese operative": 200000, "Ammortamenti": 15000, "Oneri finanziari": 10000, "Disponibilità liquide": 110000, "Debiti a breve": 85000, "Patrimonio netto": 420000, "Totale attivo": 950000},
+        {"Azienda": "Beta Spa", "Anno": 2022, "Ricavi": 1750000, "Utile netto": 120000, "EBIT": 130000, "Spese operative": 260000, "Ammortamenti": 30000, "Oneri finanziari": 12000, "Disponibilità liquide": 150000, "Debiti a breve": 120000, "Patrimonio netto": 500000, "Totale attivo": 1150000}
+    ]
+    uploaded_files = []  # placeholder to trigger next block
+    bilanci, tabella_kpi, tabella_voci = {}, [], []
+    for entry in demo_data:
+        azienda, anno = entry["Azienda"], entry["Anno"]
+        ricavi = entry["Ricavi"]
+        utile_netto = entry["Utile netto"]
+        ebit = entry["EBIT"]
+        spese_oper = entry["Spese operative"]
+        ammortamenti = entry["Ammortamenti"]
+        oneri_fin = entry["Oneri finanziari"]
+        mol = ricavi - spese_oper
+        liquidita = entry["Disponibilità liquide"]
+        debiti_brevi = entry["Debiti a breve"]
+        patrimonio_netto = entry["Patrimonio netto"]
+        totale_attivo = entry["Totale attivo"]
+
+        ebitda = ebit + spese_oper
+        ebitda_margin = round(ebitda / ricavi * 100, 2)
+        roe = round(utile_netto / patrimonio_netto * 100, 2)
+        roi = round(ebit / totale_attivo * 100, 2)
+        current_ratio = round(liquidita / debiti_brevi, 2)
+        valutazione = "Ottima solidità ✅"
+        if any([ebitda_margin < 10, roe < 5, roi < 5, current_ratio < 1]): valutazione = "⚠️ Alcuni indici critici"
+        if all([ebitda_margin < 10, roe < 5, roi < 5, current_ratio < 1]): valutazione = "❌ Situazione critica"
+        indice_sintetico = round((
+            (ebitda_margin / benchmark["EBITDA Margin"] +
+            roe / benchmark["ROE"] +
+            roi / benchmark["ROI"] +
+            current_ratio / benchmark["Current Ratio"]) / 4) * 10, 1)
+
+        tabella_kpi.append({
+            "Azienda": azienda, "Anno": anno,
+            "EBITDA Margin": ebitda_margin, "Benchmark EBITDA": benchmark["EBITDA Margin"], "Δ EBITDA": ebitda_margin - benchmark["EBITDA Margin"],
+            "ROE": roe, "Benchmark ROE": benchmark["ROE"], "Δ ROE": roe - benchmark["ROE"],
+            "ROI": roi, "Benchmark ROI": benchmark["ROI"], "Δ ROI": roi - benchmark["ROI"],
+            "Current Ratio": current_ratio, "Benchmark Current": benchmark["Current Ratio"], "Δ Current": current_ratio - benchmark["Current Ratio"],
+            "Indice Sintetico": indice_sintetico, "Valutazione": valutazione,
+            "Ricavi": ricavi
+        })
+else:
     bilanci, tabella_kpi, tabella_voci = {}, [], []
     for file in uploaded_files:
         try:
@@ -127,6 +177,11 @@ if uploaded_files:
         })
 
     st.markdown("## 🧾 Riepilogo KPI con Benchmark")
+st.caption("🛈 I principali KPI sono descritti qui sotto:")
+st.caption("• EBITDA Margin: margine operativo lordo rapportato ai ricavi.")
+st.caption("• ROE: rendimento per il capitale proprio.")
+st.caption("• ROI: rendimento del capitale investito.")
+st.caption("• Current Ratio: capacità di coprire i debiti a breve con le attività liquide.")
     colonne_numeriche = [
         "EBITDA Margin", "Benchmark EBITDA", "Δ EBITDA",
         "ROE", "Benchmark ROE", "Δ ROE",
