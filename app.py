@@ -64,8 +64,8 @@ if not demo_mode and uploaded_files:
 if demo_mode:
     st.info("Modalità demo: dati di esempio caricati.")
     demo_ce = pd.DataFrame({
-        "Voce": ["Ricavi", "Utile netto", "EBIT", "Spese operative"],
-        "Importo (€)": [1_200_000, 85_000, 90_000, 200_000],
+        "Voce": ["Ricavi", "Utile netto", "EBIT", "Spese operative", "Ammortamenti", "Oneri finanziari"],
+        "Importo (€)": [1_200_000, 85_000, 90_000, 200_000, 15_000, 10_000],
     })
     demo_att = pd.DataFrame({"Attività": ["Disponibilità liquide"], "Importo (€)": [110_000]})
     demo_pas = pd.DataFrame({
