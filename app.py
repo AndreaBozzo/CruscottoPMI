@@ -1,4 +1,4 @@
-# Cruscotto Finanziario per PMI – Build completa con YoY, benchmark, cache, filtri, export + PDF
+# Cruscotto Finanziario per PMI – Build completa con YoY, benchmark, cache, filtri, export + PDF + benchmark editor
 
 import streamlit as st
 import pandas as pd
@@ -23,30 +23,34 @@ uploaded_files = (
     if not demo_mode else None
 )
 
-# ─── FUNZIONI CACHATE ─────────────────────────────────
+# ─── BENCHMARK DI DEFAULT E EDITOR ─────────────────────
+default_benchmark = {"EBITDA Margin": 15.0, "ROE": 10.0, "ROI": 8.0, "Current Ratio": 1.3}
+
 @st.cache_data(show_spinner=False)
 def load_benchmark(file):
-    """Legge il CSV benchmark e restituisce dict KPI→valore"""
     if file is None:
-        return {"EBITDA Margin": 15.0, "ROE": 10.0, "ROI": 8.0, "Current Ratio": 1.3}
+        return default_benchmark.copy()
     df_bm = pd.read_csv(file)
     return {row["KPI"]: row["Valore"] for _, row in df_bm.iterrows()}
 
+benchmark = load_benchmark(benchmark_file)
+
+st.sidebar.markdown("## ⚙️ Modifica Benchmark")
+for kpi in benchmark:
+    benchmark[kpi] = st.sidebar.number_input(kpi, value=float(benchmark[kpi]), step=0.1)
+
+# ─── FUNZIONI CACHATE ─────────────────────────────────
 @st.cache_data(show_spinner=False)
 def load_excel(xlsx):
-    """Carica le tre tabelle essenziali da un Excel, restituisce tuple di DF"""
     ce      = pd.read_excel(xlsx, sheet_name="Conto Economico")
     attivo  = pd.read_excel(xlsx, sheet_name="Attivo")
     passivo = pd.read_excel(xlsx, sheet_name="Passivo")
     return ce, attivo, passivo
 
-# ─── DATI BENCHMARK ───────────────────────────────────
-benchmark = load_benchmark(benchmark_file)
-
+# ─── ELABORAZIONE ─────────────────────────────────────
 kpi_cols = ["EBITDA Margin", "ROE", "ROI", "Current Ratio"]
 tabella_kpi, tabella_voci, bilanci = [], [], {}
 
-# ─── CARICAMENTO DATI (reale o demo) ──────────────────
 if not demo_mode and uploaded_files:
     for f in uploaded_files:
         try:
@@ -63,19 +67,15 @@ if demo_mode:
         "Voce": ["Ricavi", "Utile netto", "EBIT", "Spese operative"],
         "Importo (€)": [1_200_000, 85_000, 90_000, 200_000],
     })
-    demo_att = pd.DataFrame({
-        "Attività": ["Disponibilità liquide"],
-        "Importo (€)": [110_000],
-    })
+    demo_att = pd.DataFrame({"Attività": ["Disponibilità liquide"], "Importo (€)": [110_000]})
     demo_pas = pd.DataFrame({
         "Passività e Patrimonio Netto": ["Debiti a breve", "Patrimonio netto"],
-        "Importo (€)": [85_000, 420_000],
+        "Importo (€)": [85_000, 420_000]
     })
     bilanci = {
         ("Alpha Srl", 2022): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas},
     }
 
-# ─── ELABORAZIONE KPI ─────────────────────────────────
 @st.cache_data(show_spinner=False)
 def calcola_kpi(ce, att, pas, benchmark):
     try:
