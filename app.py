@@ -1,4 +1,4 @@
-# Cruscotto Finanziario per PMI – Build completa con YoY, benchmark, cache, filtri, export
+# Cruscotto Finanziario per PMI – Build completa con YoY, benchmark, cache, filtri, export + PDF
 
 import streamlit as st
 import pandas as pd
@@ -12,8 +12,7 @@ from reportlab.lib.units import cm
 st.set_page_config(page_title="Cruscotto Finanziario PMI", layout="wide")
 st.title("📊 Cruscotto Finanziario per PMI")
 
-# ─── INPUT ───
-
+# ─── INPUT ─────────────────────────────────────────────
 demo_mode = st.checkbox("🔍 Usa dati di esempio", value=False)
 benchmark_file = st.file_uploader("Carica file CSV benchmark (facoltativo)", type=["csv"])
 uploaded_files = (
@@ -24,10 +23,10 @@ uploaded_files = (
     if not demo_mode else None
 )
 
-# ─── FUNZIONI CACHATE ───
-
+# ─── FUNZIONI CACHATE ─────────────────────────────────
 @st.cache_data(show_spinner=False)
 def load_benchmark(file):
+    """Legge il CSV benchmark e restituisce dict KPI→valore"""
     if file is None:
         return {"EBITDA Margin": 15.0, "ROE": 10.0, "ROI": 8.0, "Current Ratio": 1.3}
     df_bm = pd.read_csv(file)
@@ -35,51 +34,19 @@ def load_benchmark(file):
 
 @st.cache_data(show_spinner=False)
 def load_excel(xlsx):
+    """Carica le tre tabelle essenziali da un Excel, restituisce tuple di DF"""
     ce      = pd.read_excel(xlsx, sheet_name="Conto Economico")
     attivo  = pd.read_excel(xlsx, sheet_name="Attivo")
     passivo = pd.read_excel(xlsx, sheet_name="Passivo")
     return ce, attivo, passivo
 
-@st.cache_data(show_spinner=False)
-def calcola_kpi(ce, att, pas, benchmark):
-    try:
-        ricavi       = ce.loc[ce["Voce"]=="Ricavi","Importo (€)"].values[0]
-        utile_netto  = ce.loc[ce["Voce"]=="Utile netto","Importo (€)"].values[0]
-        ebit         = ce.loc[ce["Voce"]=="EBIT","Importo (€)"].values[0]
-        spese_oper   = ce.loc[ce["Voce"]=="Spese operative","Importo (€)"].values[0]
-        ammortamenti = ce.loc[ce["Voce"]=="Ammortamenti","Importo (€)"].values[0] if "Ammortamenti" in ce["Voce"].values else 0
-        oneri_fin    = ce.loc[ce["Voce"]=="Oneri finanziari","Importo (€)"].values[0] if "Oneri finanziari" in ce["Voce"].values else 0
-        mol          = ricavi - spese_oper
-        liquidita    = att.loc[att["Attività"]=="Disponibilità liquide","Importo (€)"].values[0]
-        debiti_brevi = pas.loc[pas["Passività e Patrimonio Netto"]=="Debiti a breve","Importo (€)"].values[0]
-        patrimonio   = pas.loc[pas["Passività e Patrimonio Netto"]=="Patrimonio netto","Importo (€)"].values[0]
-        totale_att   = att["Importo (€)"].sum()
-
-        ebitda = ebit + spese_oper
-        eda_m  = round(ebitda/ricavi*100,2)
-        roe    = round(utile_netto/patrimonio*100,2)
-        roi    = round(ebit/totale_att*100,2)
-        curr_r = round(liquidita/debiti_brevi,2)
-        indice = round(((eda_m/benchmark["EBITDA Margin"] + roe/benchmark["ROE"] + roi/benchmark["ROI"] + curr_r/benchmark["Current Ratio"]) / 4) * 10, 1)
-        valut  = "Ottima solidità ✅"
-        if any([eda_m<10, roe<5, roi<5, curr_r<1]): valut="⚠️ Alcuni indici critici"
-        if all([eda_m<10, roe<5, roi<5, curr_r<1]): valut="❌ Situazione critica"
-        return {
-            "EBITDA Margin": eda_m, "ROE": roe, "ROI": roi, "Current Ratio": curr_r,
-            "Indice Sintetico": indice, "Valutazione": valut,
-            "Ricavi": ricavi, "EBIT": ebit, "Spese Operative": spese_oper,
-            "Ammortamenti": ammortamenti, "Oneri Finanziari": oneri_fin,
-            "MOL": mol, "Totale Attivo": totale_att, "Patrimonio Netto": patrimonio,
-            "Liquidità": liquidita, "Debiti a Breve": debiti_brevi
-        }
-    except Exception as ex:
-        return {"Errore": str(ex)}
-
-# ─── ELABORAZIONE DATI ───
+# ─── DATI BENCHMARK ───────────────────────────────────
 benchmark = load_benchmark(benchmark_file)
+
 kpi_cols = ["EBITDA Margin", "ROE", "ROI", "Current Ratio"]
 tabella_kpi, tabella_voci, bilanci = [], [], {}
 
+# ─── CARICAMENTO DATI (reale o demo) ──────────────────
 if not demo_mode and uploaded_files:
     for f in uploaded_files:
         try:
@@ -108,6 +75,42 @@ if demo_mode:
         ("Alpha Srl", 2022): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas},
     }
 
+# ─── ELABORAZIONE KPI ─────────────────────────────────
+@st.cache_data(show_spinner=False)
+def calcola_kpi(ce, att, pas, benchmark):
+    try:
+        ricavi       = ce.loc[ce["Voce"]=="Ricavi","Importo (€)"].values[0]
+        utile_netto  = ce.loc[ce["Voce"]=="Utile netto","Importo (€)"].values[0]
+        ebit         = ce.loc[ce["Voce"]=="EBIT","Importo (€)"].values[0]
+        spese_oper   = ce.loc[ce["Voce"]=="Spese operative","Importo (€)"].values[0]
+        ammortamenti = ce.loc[ce["Voce"]=="Ammortamenti","Importo (€)"].values[0] if "Ammortamenti" in ce["Voce"].values else 0
+        oneri_fin    = ce.loc[ce["Voce"]=="Oneri finanziari","Importo (€)"].values[0] if "Oneri finanziari" in ce["Voce"].values else 0
+        mol          = ricavi - spese_oper
+        liquidita    = att.loc[att["Attività"]=="Disponibilità liquide","Importo (€)"].values[0]
+        debiti_brevi = pas.loc[pas["Passività e Patrimonio Netto"]=="Debiti a breve","Importo (€)"].values[0]
+        patrimonio   = pas.loc[pas["Passività e Patrimonio Netto"]=="Patrimonio netto","Importo (€)"].values[0]
+        totale_att   = att["Importo (€)"].sum()
+        ebitda = ebit + spese_oper
+        eda_m  = round(ebitda/ricavi*100,2)
+        roe    = round(utile_netto/patrimonio*100,2)
+        roi    = round(ebit/totale_att*100,2)
+        curr_r = round(liquidita/debiti_brevi,2)
+        indice = round(((eda_m/benchmark["EBITDA Margin"] + roe/benchmark["ROE"] + roi/benchmark["ROI"] + curr_r/benchmark["Current Ratio"]) / 4) * 10, 1)
+        valut  = "Ottima solidità ✅"
+        if any([eda_m<10, roe<5, roi<5, curr_r<1]): valut="⚠️ Alcuni indici critici"
+        if all([eda_m<10, roe<5, roi<5, curr_r<1]): valut="❌ Situazione critica"
+        kpi_row = {
+            "EBITDA Margin": eda_m, "ROE": roe, "ROI": roi, "Current Ratio": curr_r,
+            "Indice Sintetico": indice, "Valutazione": valut,
+            "Ricavi": ricavi, "EBIT": ebit, "Spese Operative": spese_oper,
+            "Ammortamenti": ammortamenti, "Oneri Finanziari": oneri_fin,
+            "MOL": mol, "Totale Attivo": totale_att, "Patrimonio Netto": patrimonio,
+            "Liquidità": liquidita, "Debiti a Breve": debiti_brevi
+        }
+        return kpi_row
+    except Exception as ex:
+        return {"Errore": str(ex)}
+
 for (azi, yr), dfs in bilanci.items():
     row = calcola_kpi(dfs["ce"], dfs["attivo"], dfs["passivo"], benchmark)
     if "Errore" in row:
@@ -115,13 +118,14 @@ for (azi, yr), dfs in bilanci.items():
         continue
     row.update({"Azienda": azi, "Anno": int(yr)})
     tabella_kpi.append(row)
-    tabella_voci.append({k: row[k] for k in row if k not in kpi_cols + ["Indice Sintetico","Valutazione","Azienda","Anno"]})
+    tabella_voci.append({"Azienda": azi, "Anno": int(yr), **{k: row[k] for k in row if k not in kpi_cols+["Indice Sintetico","Valutazione","Azienda","Anno"]}})
 
-# ─── DASHBOARD ───
+df_kpi = pd.DataFrame(tabella_kpi)
+df_voci = pd.DataFrame(tabella_voci)
 
-if tabella_kpi:
-    df_kpi = pd.DataFrame(tabella_kpi)
-    df_kpi.sort_values(["Azienda", "Anno"], inplace=True)
+# ─── DASHBOARD & EXPORT ───────────────────────────────
+if not df_kpi.empty:
+    df_kpi.sort_values(["Azienda","Anno"], inplace=True)
     num_cols = df_kpi.select_dtypes(include="number").columns
     fmt_dict = {c: "{:.2f}" for c in num_cols}
 
@@ -133,97 +137,55 @@ if tabella_kpi:
             "Current Ratio":"background-color:#f8d7da" if row["Current Ratio"]<1 else "background-color:#d4edda"
         })
 
-    st.markdown("## 📜 KPI con Evidenziazione Condizionale")
     st.dataframe(df_kpi.style.format(fmt_dict).apply(evid, axis=1), use_container_width=True)
 
-    st.markdown("## 📉 Variazione Percentuale YoY")
-    
     yoy = (
-    df_kpi
-    .sort_values(["Azienda", "Anno"])
-    .groupby("Azienda", group_keys=False)[["Anno"] + kpi_cols + ["Ricavi"]]
-    .apply(lambda g: g.set_index("Anno").pct_change().dropna().reset_index())
-    .reset_index(drop=True)
-    .rename(columns={c: f"Δ% {c}" for c in kpi_cols + ["Ricavi"]})
+        df_kpi.set_index("Anno")
+        .groupby("Azienda")[kpi_cols + ["Ricavi"]]
+        .pct_change()
+        .dropna() * 100
+        .reset_index()
+        .rename(columns={c: f"Δ% {c}" for c in kpi_cols + ["Ricavi"]})
     )
 
     st.dataframe(yoy, use_container_width=True)
 
-    # Classifica
-    st.markdown("## 🏆 Classifica Indice Sintetico")
-    cls = df_kpi.groupby("Azienda")['Indice Sintetico'].mean().sort_values(ascending=False).reset_index()
-    st.plotly_chart(px.bar(cls,x="Azienda",y="Indice Sintetico",text="Indice Sintetico"),use_container_width=True)
+    st.markdown("## 📘 Confronto voci di bilancio")
+    asel = st.multiselect("Filtra per anno", df_voci["Anno"].unique(), default=df_voci["Anno"].unique())
+    vs = st.multiselect("Seleziona voci da confrontare", [c for c in df_voci.columns if c not in ["Azienda", "Anno"]], default=["Ricavi", "EBIT"])
+    if asel and vs:
+        dfb = df_voci[df_voci['Anno'].isin(asel)]
+        for v in vs:
+            fig = px.bar(dfb, x="Azienda", y=v, color="Anno", barmode="group", title=f"{v} per azienda e anno")
+            st.plotly_chart(fig, use_container_width=True)
 
-    # Sidebar filtri
-    st.sidebar.markdown("## 🔍 Filtri")
-    anni = sorted(df_kpi['Anno'].unique())
-    ksel = st.sidebar.multiselect("KPI", kpi_cols, default=kpi_cols)
-    asel = st.sidebar.multiselect("Anno", anni, default=anni)
+    buffer = BytesIO()
+    with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+        df_kpi.to_excel(writer, sheet_name="KPI", index=False)
+        df_voci.to_excel(writer, sheet_name="Bilancio", index=False)
+        yoy.to_excel(writer, sheet_name="Δ YoY", index=False)
+    st.download_button("📥 Scarica Excel", buffer.getvalue(), file_name="cruscotto_finanziario.xlsx")
 
-    if asel and ksel:
-        st.markdown("## 📊 KPI selezionati")
-        dfp = df_kpi[df_kpi['Anno'].isin(asel)]
-        for k in ksel:
-            st.plotly_chart(px.line(dfp,x="Anno",y=k,color="Azienda",markers=True,title=k),use_container_width=True)
-
-    # Voci bilancio
-    df_voci = pd.DataFrame(tabella_voci)
-    vcols = [c for c in df_voci.columns if c not in ("Azienda","Anno")]
-    vsel  = st.sidebar.multiselect("Voci bilancio", vcols, default=["Ricavi","EBIT"])
-    if asel and vsel:
-        st.markdown("## 📊 Voci di Bilancio")
-    if "Anno" in df_voci.columns:
-    dfb = df_voci[df_voci['Anno'].isin(asel)]
-    else:
-    st.warning("La colonna 'Anno' non è presente in df_voci.")
-    st.write("Colonne disponibili:", df_voci.columns.tolist())
-
-        for v in vsel:
-            st.plotly_chart(px.bar(dfb,x="Anno",y=v,color="Azienda",barmode="group",title=v),use_container_width=True)
-
-    # Export Excel
-    buf_x = BytesIO()
-    with pd.ExcelWriter(buf_x, engine="xlsxwriter") as w:
-        df_kpi.to_excel(w, "KPI", index=False)
-        yoy.to_excel(w, "Δ_YoY", index=False)
-    st.download_button("📥 Excel", buf_x.getvalue(), "report_finanziario.xlsx")
-
-    # Export PDF
-    def g_pdf(df, logo="A_logo_for_Andrea_Bozzo_is_depicted_in_the_image,_.png"):
+    # ─── EXPORT PDF ──────────────────────────────────────
+    def genera_pdf(df):
         buf = BytesIO()
         c = canvas.Canvas(buf, pagesize=A4)
-        w, h = A4
-        if os.path.exists(logo):
-            c.drawImage(logo, 2 * cm, h - 3.5 * cm, 3 * cm, 3 * cm, mask="auto")
+        width, height = A4
         c.setFont("Helvetica-Bold", 16)
-        c.drawString(6 * cm, h - 2.5 * cm, "Report Finanziario PMI")
-        y = h - 4.5 * cm
-        c.setFont("Helvetica", 11)
-        for _, r in df.sort_values("Anno").iterrows():
-            for v in [
-                "Anno",
-                "Azienda",
-                "EBITDA Margin",
-                "ROE",
-                "ROI",
-                "Current Ratio",
-                "Indice Sintetico",
-                "Valutazione",
-            ]:
-                c.drawString(2 * cm, y, f"{v}: {r[v]}")
-                y -= 0.6 * cm
-            y -= 0.4 * cm
-            if y < 5 * cm:
-                c.setFont("Helvetica-Oblique", 8)
-                c.drawString(2 * cm, 2 * cm, "© 2025 Andrea Bozzo – Cruscotto PMI")
+        c.drawString(2*cm, height - 2*cm, "Report Finanziario PMI")
+        c.setFont("Helvetica", 10)
+        y = height - 3*cm
+        for _, row in df.iterrows():
+            for key in ["Azienda", "Anno"] + kpi_cols + ["Indice Sintetico", "Valutazione"]:
+                c.drawString(2*cm, y, f"{key}: {row[key]}")
+                y -= 0.5*cm
+            y -= 0.3*cm
+            if y < 4*cm:
                 c.showPage()
-                y = h - 4.5 * cm
-                c.setFont("Helvetica", 11)
-        c.setFont("Helvetica-Oblique", 8)
-        c.drawString(2 * cm, 2 * cm, "© 2025 Andrea Bozzo – Cruscotto PMI")
+                y = height - 3*cm
         c.save()
         buf.seek(0)
         return buf
 
-    st.download_button("📄 PDF", g_pdf(df_kpi), "report_finanziario.pdf")
-
+    pdf_buf = genera_pdf(df_kpi)
+    st.download_button("📄 Scarica PDF", pdf_buf, file_name="report_finanziario.pdf")
