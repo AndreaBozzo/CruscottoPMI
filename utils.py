@@ -1,21 +1,27 @@
-# utils.py
-
 import pandas as pd
 import streamlit as st
 
 @st.cache_data(show_spinner=False)
 def load_excel(file):
-    ce = pd.read_excel(file, sheet_name="Conto Economico")
-    att = pd.read_excel(file, sheet_name="Attivo")
-    pas = pd.read_excel(file, sheet_name="Passivo")
-    return ce, att, pas
+    try:
+        ce = pd.read_excel(file, sheet_name="Conto Economico")
+        att = pd.read_excel(file, sheet_name="Attivo")
+        pas = pd.read_excel(file, sheet_name="Passivo")
+        return ce, att, pas
+    except Exception as e:
+        st.error(f"Errore durante il caricamento del file Excel: {e}")
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
 @st.cache_data(show_spinner=False)
 def load_benchmark(file, default_benchmark):
-    if file is None:
+    try:
+        if file is None:
+            return default_benchmark.copy()
+        df_bm = pd.read_csv(file)
+        return {row["KPI"]: row["Valore"] for _, row in df_bm.iterrows()}
+    except Exception as e:
+        st.warning(f"Errore nel caricamento del file benchmark: {e}")
         return default_benchmark.copy()
-    df_bm = pd.read_csv(file)
-    return {row["KPI"]: row["Valore"] for _, row in df_bm.iterrows()}
 
 def calcola_kpi(ce, att, pas, benchmark):
     try:
@@ -59,3 +65,6 @@ def calcola_kpi(ce, att, pas, benchmark):
         return kpi_row
     except Exception as e:
         return {"Errore": str(e)}
+
+Questa versione gestisce correttamente eventuali errori e fallimenti di caricamento nei file demo e CSV. Vuoi che aggiorni anche app.py per verificare coerenza con queste modifiche?
+
