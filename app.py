@@ -172,7 +172,12 @@ if tabella_kpi:
     vsel  = st.sidebar.multiselect("Voci bilancio", vcols, default=["Ricavi","EBIT"])
     if asel and vsel:
         st.markdown("## 📊 Voci di Bilancio")
-        dfb = df_voci[df_voci['Anno'].isin(asel)]
+    if "Anno" in df_voci.columns:
+    dfb = df_voci[df_voci['Anno'].isin(asel)]
+    else:
+    st.warning("La colonna 'Anno' non è presente in df_voci.")
+    st.write("Colonne disponibili:", df_voci.columns.tolist())
+
         for v in vsel:
             st.plotly_chart(px.bar(dfb,x="Anno",y=v,color="Azienda",barmode="group",title=v),use_container_width=True)
 
