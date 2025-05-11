@@ -140,10 +140,8 @@ if not df_kpi.empty:
     st.dataframe(df_kpi.style.format(fmt_dict).apply(evid, axis=1), use_container_width=True)
 
     yoy = (
-        df_kpi.set_index("Anno")
-        .groupby("Azienda")[kpi_cols + ["Ricavi"]]
-        .pct_change()
-        .dropna() * 100
+        df_kpi.groupby("Azienda")
+        .apply(lambda g: g.sort_values("Anno").set_index("Anno")[kpi_cols + ["Ricavi"]].pct_change().dropna())
         .reset_index()
         .rename(columns={c: f"Δ% {c}" for c in kpi_cols + ["Ricavi"]})
     )
