@@ -1,4 +1,5 @@
-# Cruscotto Finanziario per PMI – Build completa con YoY, benchmark, filtri, export
+# Cruscotto Finanziario per PMI – Build completa con YoY, benchmark, cache, filtri, export
+# Step 1: ottimizzazione performance con caching Streamlit
 
 import streamlit as st
 import pandas as pd
@@ -59,11 +60,25 @@ if not demo_mode and uploaded_files:
 
 if demo_mode:
     st.info("Modalità demo: dati di esempio caricati.")
+    # Costruiamo DataFrame fittizi direttamente senza leggere da Excel
+    demo_ce = pd.DataFrame({
+        "Voce": ["Ricavi", "Utile netto", "EBIT", "Spese operative"],
+        "Importo (€)": [1_200_000, 85_000, 90_000, 200_000],
+    })
+    demo_att = pd.DataFrame({
+        "Attività": ["Disponibilità liquide"],
+        "Importo (€)": [110_000],
+    })
+    demo_pas = pd.DataFrame({
+        "Passività e Patrimonio Netto": ["Debiti a breve", "Patrimonio netto"],
+        "Importo (€)": [85_000, 420_000],
+    })
+
     bilanci = {
-        ("Alpha Srl", 2022): load_excel(BytesIO()),  # placeholder demo; caricato a runtime
+        ("Alpha Srl", 2022): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas},
     }
 
-# ─── ELABORAZIONE KPI (funzione con cache) ───────────
+# ─── ELABORAZIONE KPI (funzione con cache) ─────────── (funzione con cache) ───────────
 @st.cache_data(show_spinner=False)
 def calcola_kpi(ce, att, pas, benchmark):
     try:
@@ -130,8 +145,7 @@ if not df_kpi.empty:
     # Δ YoY
     yoy = (
         df_kpi.set_index("Anno").groupby("Azienda")[kpi_cols+["Ricavi"]]
-        .pct)
-
+        .pct
     # Classifica
     st.markdown("## 🏆 Classifica Indice Sintetico")
     cls = df_kpi.groupby("Azienda")['Indice Sintetico'].mean().sort_values(ascending=False).reset_index()
