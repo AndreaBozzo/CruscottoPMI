@@ -1,63 +1,68 @@
-# Cruscotto Finanziario per PMI - README
+📊 Cruscotto Finanziario per PMI
+CruscottoPMI è un'applicazione sviluppata in Python con Streamlit, progettata per analizzare, confrontare e monitorare gli indicatori economico-finanziari delle piccole e medie imprese (PMI) in modo intuitivo ed efficiente.
 
-## Descrizione
-Applicazione Streamlit per l’analisi finanziaria di PMI attraverso l’importazione di bilanci in formato Excel. Consente il confronto multi-anno e multi-azienda, con calcolo KPI, benchmark, grafici dinamici, esportazioni e classifiche sintetiche.
+⚙️ Funzionalità principali
+📁 Caricamento multiplo di bilanci (uno per anno) da file Excel
 
-## Funzionalità principali
-- 📂 Caricamento multiplo di bilanci Excel (multi-anno, multi-azienda)
-- 📊 Calcolo KPI: EBITDA Margin, ROE, ROI, Current Ratio
-- 🧠 Calcolo indice sintetico (normalizzato su 10) per classificare la solidità aziendale
-- 🎯 Benchmark personalizzabile da CSV
-- 🧾 Evidenziazione condizionale su KPI critici
-- 📉 Visualizzazione dinamica di voci di bilancio chiave (Ricavi, Spese Operative, Ammortamenti, MOL...)
-- 🏆 Classifica aziende per performance media
-- 📤 Esportazione dei risultati in Excel (multi-foglio) e PDF (con logo incluso)
+📉 Analisi KPI fondamentali: EBITDA Margin, ROE, ROI, Current Ratio
 
-## Esempi di test
-Abbiamo incluso nel repository i seguenti file di esempio:
+📊 Benchmarking settoriale personalizzabile
 
-```
-📁 dati_test/
-├── Alpha_2023.xlsx
-├── Alpha_2024.xlsx
-├── Beta_2023.xlsx
-├── Beta_2024.xlsx
-└── benchmark_kpi.csv (opzionale)
-```
+🔁 Variazioni YoY calcolate automaticamente
 
-## Requisiti
-- Python >= 3.8
-- Streamlit
-- Plotly
-- Pandas
-- ReportLab
+🧮 Indice sintetico normalizzato (scala 0–10)
 
-Per installare tutte le dipendenze richieste, puoi usare direttamente il file [`requirements.txt`](requirements.txt):
-```bash
+🧩 Dashboard comparativa per voci di ricavo e costo (es. EBIT, Ammortamenti, MOL)
+
+🖍️ Stile condizionale nei riepiloghi (celle rosse/verde)
+
+📝 Esportazione in PDF e Excel
+
+🧪 Modalità Demo con dati di esempio caricabili
+
+✨ Modularizzazione codice tramite utils.py
+
+💾 Caching intelligente per prestazioni migliorate
+
+📂 Struttura dei file
+bash
+Copia
+Modifica
+📦 cruscottopmi/
+├── app.py                 # Applicazione principale Streamlit
+├── utils.py               # Funzioni ausiliarie e caching
+├── requirements.txt       # Dipendenze per l’ambiente virtuale
+├── demo/
+│   └── file_demo.xlsx     # File demo pre-caricato
+├── benchmarks/
+│   └── benchmark_esempio.csv
+🚀 Avvio dell'app
+bash
+Copia
+Modifica
 pip install -r requirements.txt
-```
-
-## Avvio locale
-```bash
 streamlit run app.py
-```
+Per forzare l'avvio su una porta specifica:
 
-> 💡 Per avviare l'app su una porta specifica (es. 8502):
-```bash
-streamlit run app.py --server.port 8502
-```
+bash
+Copia
+Modifica
+streamlit run app.py --server.port 8501
+🧪 Modalità Demo
+Spunta l'opzione 🔍 Usa dati di esempio all’avvio dell’app per testare tutte le funzionalità senza caricare file.
 
-## Note
-Per aggiungere ulteriori aziende o anni, basta nominare i file Excel con il formato: `Azienda_Anno.xlsx` e strutturarli con i fogli:
-- `Conto Economico`
-- `Attivo`
-- `Passivo`
+📎 Requisiti
+Il file requirements.txt include tutte le dipendenze essenziali. Alcuni pacchetti chiave:
 
-Il file `benchmark_kpi.csv` opzionale deve avere questa struttura:
-```csv
-KPI,Valore
-EBITDA Margin,15.0
-ROE,10.0
-ROI,8.0
-Current Ratio,1.3
-```
+streamlit
+
+pandas
+
+plotly
+
+reportlab
+
+xlsxwriter
+
+🤝 Autore
+Progetto sviluppato da Andrea Bozzo come portfolio interattivo e strumento a supporto di PMI italiane.
