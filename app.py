@@ -142,11 +142,16 @@ if not df_kpi.empty:
         })
     st.dataframe(df_kpi.style.format(fmt_dict).apply(evid, axis=1), use_container_width=True)
 
-    # Δ YoY
     yoy = (
-        df_kpi.set_index("Anno").groupby("Azienda")[kpi_cols+["Ricavi"]]
-        .pct)
-    
+    df_kpi
+    .set_index("Anno")
+    .groupby("Azienda")[kpi_cols + ["Ricavi"]]
+    .pct_change()
+    .dropna() * 100
+    .reset_index()
+    .rename(columns={c: f"Δ% {c}" for c in kpi_cols + ["Ricavi"]})
+    )
+
     # Classifica
     st.markdown("## 🏆 Classifica Indice Sintetico")
     cls = df_kpi.groupby("Azienda")['Indice Sintetico'].mean().sort_values(ascending=False).reset_index()
