@@ -125,9 +125,10 @@ df_voci = pd.DataFrame(tabella_voci)
 
 # 🔧 Forzare Anno a int per evitare visualizzazione decimale
 if not df_kpi.empty and "Anno" in df_kpi.columns:
-    df_kpi["Anno"] = df_kpi["Anno"].astype(int)
+    df_kpi["Anno"] = df_kpi["Anno"].astype(int).astype(str)
+
 if not df_voci.empty and "Anno" in df_voci.columns:
-    df_voci["Anno"] = df_voci["Anno"].astype(int)
+    df_voci["Anno"] = df_voci["Anno"].astype(int).astype(str)
     
 # ─── DASHBOARD & EXPORT ───────────────────────────────
 if not df_kpi.empty:
