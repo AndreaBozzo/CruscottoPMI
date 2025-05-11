@@ -177,12 +177,13 @@ else:
         })
 
     st.markdown("## 🧾 Riepilogo KPI con Benchmark")
-st.caption("🛈 I principali KPI sono descritti qui sotto:")
-st.caption("• EBITDA Margin: margine operativo lordo rapportato ai ricavi.")
-st.caption("• ROE: rendimento per il capitale proprio.")
-st.caption("• ROI: rendimento del capitale investito.")
-st.caption("• Current Ratio: capacità di coprire i debiti a breve con le attività liquide.")
-         colonne_numeriche = [
+    st.caption("🛈 I principali KPI sono descritti qui sotto:")
+    st.caption("• EBITDA Margin: margine operativo lordo rapportato ai ricavi.")
+    st.caption("• ROE: rendimento per il capitale proprio.")
+    st.caption("• ROI: rendimento del capitale investito.")
+    st.caption("• Current Ratio: capacità di coprire i debiti a breve con le attività liquide.")
+
+    colonne_numeriche = [
         "EBITDA Margin", "Benchmark EBITDA", "Δ EBITDA",
         "ROE", "Benchmark ROE", "Δ ROE",
         "ROI", "Benchmark ROI", "Δ ROI",
@@ -192,6 +193,7 @@ st.caption("• Current Ratio: capacità di coprire i debiti a breve con le atti
     formato = {col: "{:.2f}" for col in colonne_numeriche if col in df_kpi_finale.columns}
     styled_df = df_kpi_finale.style.format(formato, na_rep="-").apply(evidenzia_valori, axis=1)
     st.dataframe(styled_df, use_container_width=True)
+
 
     if anni_sel and kpi_sel:
         st.markdown("## 📈 Andamento KPI Selezionati")
