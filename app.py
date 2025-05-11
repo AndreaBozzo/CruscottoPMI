@@ -16,7 +16,7 @@ demo_mode = st.checkbox("🔍 Usa dati di esempio", value=False)
 
 uploaded_files = None
 if not demo_mode:
-    uploaded_files = st.file_uploader("Carica uno o più file Excel del bilancio (uno per anno)", type=["xlsx"], accept_multiple_files=True)", type=["xlsx"], accept_multiple_files=True), type=["xlsx"], accept_multiple_files=True)
+uploaded_files = st.file_uploader("Carica uno o più file Excel del bilancio (uno per anno)", type=["xlsx"], accept_multiple_files=True) if not demo_mode else None
 benchmark_file = st.file_uploader("Carica file CSV benchmark (facoltativo)", type=["csv"])
 
 benchmark_default = {"EBITDA Margin": 15.0, "ROE": 10.0, "ROI": 8.0, "Current Ratio": 1.3}
