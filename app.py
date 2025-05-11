@@ -182,7 +182,7 @@ st.caption("• EBITDA Margin: margine operativo lordo rapportato ai ricavi.")
 st.caption("• ROE: rendimento per il capitale proprio.")
 st.caption("• ROI: rendimento del capitale investito.")
 st.caption("• Current Ratio: capacità di coprire i debiti a breve con le attività liquide.")
-    colonne_numeriche = [
+         colonne_numeriche = [
         "EBITDA Margin", "Benchmark EBITDA", "Δ EBITDA",
         "ROE", "Benchmark ROE", "Δ ROE",
         "ROI", "Benchmark ROI", "Δ ROI",
