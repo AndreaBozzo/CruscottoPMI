@@ -1,9 +1,5 @@
 # 📘 CHANGELOG - Cruscotto Finanziario per PMI
 
-Tieni traccia delle modifiche, nuove funzionalità e fix implementati nel progetto.
-
----
-
 ## [v1.0.0] - 2025-05-11
 ### 🔥 Build Completa e Stabile
 
