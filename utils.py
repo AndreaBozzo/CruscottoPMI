@@ -65,6 +65,3 @@ def calcola_kpi(ce, att, pas, benchmark):
         return kpi_row
     except Exception as e:
         return {"Errore": str(e)}
-
-Questa versione gestisce correttamente eventuali errori e fallimenti di caricamento nei file demo e CSV. Vuoi che aggiorni anche app.py per verificare coerenza con queste modifiche?
-
