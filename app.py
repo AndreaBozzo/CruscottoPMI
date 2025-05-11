@@ -125,7 +125,7 @@ if tabella_kpi:
         })
     st.markdown("## 🧾 KPI vs Benchmark")
     st.dataframe(
-    num_cols = df_kpi.select_dtypes(include="number").columns
+    num_cols = df_kpi.select_dtypes(include="number").columns,
     fmt_dict  = {c: "{:.2f}" for c in num_cols}
     styled_df = df_kpi.style.format(fmt_dict, na_rep="-").apply(evid, axis=1)
         use_container_width=True
