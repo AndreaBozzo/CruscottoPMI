@@ -153,6 +153,7 @@ if not df_kpi.empty:
     )
 
     st.dataframe(yoy, use_container_width=True)
+
     # Classifica
     st.markdown("## 🏆 Classifica Indice Sintetico")
     cls = df_kpi.groupby("Azienda")['Indice Sintetico'].mean().sort_values(ascending=False).reset_index()
