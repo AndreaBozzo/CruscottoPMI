@@ -129,7 +129,13 @@ else:
             st.warning(f"Errore nell'elaborazione di {azienda} {anno}: {e}")
 
     df_kpi_finale = pd.DataFrame(tabella_kpi)
+if "Azienda" in df_kpi_finale.columns and "Anno" in df_kpi_finale.columns:
     df_kpi_finale.sort_values(by=["Azienda", "Anno"], inplace=True)
+else:
+    st.warning("⚠️ Attenzione: il dataframe non contiene le colonne 'Azienda' e/o 'Anno'.")
+    st.write("Colonne disponibili:", df_kpi_finale.columns.tolist())
+    st.write(df_kpi_finale.head())
+
 
     # 🔄 Calcolo variazione YoY
     st.markdown("## 📉 Variazione Percentuale YoY dei KPI")
