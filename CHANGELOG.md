@@ -1,5 +1,39 @@
 # 📘 CHANGELOG - Cruscotto Finanziario per PMI
 
+📦 Changelog – 12 Maggio 2025
+
+✅ Aggiunte
+
+Aggiunto file tests/test_utils.py con test automatici su:
+
+calcola_kpi() con dati realistici e benchmark vuoto
+
+load_excel() da file Excel simulato via BytesIO
+
+load_excel() con fogli mancanti → test su gestione errori
+
+load_benchmark() da file CSV in memoria
+
+Creata struttura di test con pytest
+
+Installata e verificata compatibilità openpyxl, pandas, pytest
+
+Introdotto confronto robusto tra DataFrame con assert_frame_equal
+
+🛠 Refactoring
+Refactoring funzione calcola_kpi() con fallback sicuro (.iloc[0] solo se presente)
+
+Corretto comportamento su colonne mancanti o valori assenti
+
+📁 Struttura repository
+Creata cartella tests/ con suite pronta per CI
+
+Aggiornato pyproject.toml per supportare testing e packaging
+
+✅ Stato finale: tutti i test passano (pytest -v)
+
+🔒 Pronto per CI/CD o future espansion
+
 ## [v1.0.0] - 2025-05-11
 ### 🔥 Build Completa e Stabile
 
