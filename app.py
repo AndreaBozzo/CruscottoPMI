@@ -1,4 +1,4 @@
-# Cruscotto Finanziario per PMI – Build aggiornata corretta (demo mode fix)
+# Cruscotto Finanziario per PMI – Build aggiornata corretta (demo mode + year fix)
 
 import streamlit as st
 import pandas as pd
@@ -48,7 +48,7 @@ if demo_mode:
         "Importo (€)": [85_000, 420_000]
     })
     bilanci = {
-        ("Alpha Srl", 2022): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas},
+        ("Alpha Srl", "2022"): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas},
     }
 
 elif uploaded_files:
@@ -56,17 +56,16 @@ elif uploaded_files:
         try:
             ce, att, pas = load_excel(f)
             name_parts = f.name.replace(".xlsx", "").split("_")
-            azi, yr_raw = (name_parts + ["Sconosciuta", "0"])[0:2]
+            azi = name_parts[0] if len(name_parts) >= 1 else "Sconosciuta"
             try:
-                anno = int(float(yr_raw))
-            except (ValueError, TypeError):
-                st.warning(f"⚠️ Anno non valido nel file: {f.name}")
-                continue
-            bilanci[(azi, anno)] = {"ce": ce, "attivo": att, "passivo": pas}
+                yr_str = str(int(float(name_parts[-1]))) if name_parts[-1].isdigit() else "AnnoNonValido"
+            except:
+                yr_str = "AnnoNonValido"
+            bilanci[(azi, yr_str)] = {"ce": ce, "attivo": att, "passivo": pas}
         except Exception as e:
-             st.error(f"Errore nel file {f.name}: {e}")
+            st.error(f"Errore nel file {f.name}: {e}")
 
-            
+# Il resto del codice rimane invariato e può essere incollato dopo questa sezione           
 # Funzione per il calcolo dei KPI
 @st.cache_data(show_spinner=False)
 def calcola_kpi(ce, att, pas, benchmark):
