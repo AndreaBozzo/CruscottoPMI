@@ -79,5 +79,7 @@ reportlab
 
 xlsxwriter
 
+pytest
+
 🤝 Autore
 Progetto sviluppato da Andrea Bozzo come portfolio interattivo e strumento a supporto di PMI italiane.
