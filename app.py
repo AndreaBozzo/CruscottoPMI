@@ -63,7 +63,7 @@ elif uploaded_files:
                 st.warning(f"⚠️ Anno non valido nel file: {f.name}")
                 continue
             bilanci[(azi, anno)] = {"ce": ce, "attivo": att, "passivo": pas}
-         except Exception as e:
+        except Exception as e:
              st.error(f"Errore nel file {f.name}: {e}")
 
             
