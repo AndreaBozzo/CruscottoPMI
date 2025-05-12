@@ -55,7 +55,7 @@ elif uploaded_files:
         except Exception as e:
             st.error(f"Errore nel file {f.name}: {e}")
 
-for (azi, yr), dfs in bilanci.items():
+ for (azi, yr), dfs in bilanci.items():
     row = calcola_kpi(dfs["ce"], dfs["attivo"], dfs["passivo"], benchmark)
     if "Errore" in row:
         st.warning(f"Errore su {azi} {yr}: {row['Errore']}")
