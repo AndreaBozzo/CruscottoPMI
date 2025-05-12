@@ -25,9 +25,7 @@ CruscottoPMI è un'applicazione sviluppata in Python con Streamlit, progettata p
 💾 Caching intelligente per prestazioni migliorate
 
 📂 Struttura dei file
-bash
-Copia
-Modifica
+
 📦 cruscottopmi/
 ├── app.py                 # Applicazione principale Streamlit
 ├── utils.py               # Funzioni ausiliarie e caching
@@ -35,18 +33,19 @@ Modifica
 ├── changelog.txt
 ├── benchmarks/
 │   └── benchmark_esempio.csv
+
 🚀 Avvio dell'app
+
 bash
-Copia
-Modifica
+
 pip install -r requirements.txt
 streamlit run app.py
 Per forzare l'avvio su una porta specifica:
 
 bash
-Copia
-Modifica
+
 streamlit run app.py --server.port 8501
+
 🧪 Modalità Demo
 Spunta l'opzione 🔍 Usa dati di esempio all’avvio dell’app per testare tutte le funzionalità senza caricare file.
 
