@@ -1,5 +1,3 @@
-# Cruscotto Finanziario per PMI – Build aggiornata corretta (demo mode fix)
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -60,7 +58,7 @@ elif uploaded_files:
             bilanci[(azi, yr)] = {"ce": ce, "attivo": att, "passivo": pas}
         except Exception as e:
             st.error(f"Errore nel file {f.name}: {e}")
-
+            
 # Funzione per il calcolo dei KPI
 @st.cache_data(show_spinner=False)
 def calcola_kpi(ce, att, pas, benchmark):
