@@ -25,14 +25,26 @@ for kpi in benchmark:
 
 if demo_mode:
     st.info("Modalità demo: dati di esempio caricati.")
-    uploaded_files = []
+    
+    demo_ce = pd.DataFrame({
+        "Voce": ["Ricavi", "Utile netto", "EBIT", "Spese operative", "Ammortamenti", "Oneri finanziari"],
+        "Importo (€)": [1_200_000, 85_000, 90_000, 200_000, 15_000, 10_000],
+    })
 
-tabella_kpi, tabella_voci, bilanci = [], [], {}
+    demo_att = pd.DataFrame({
+        "Attività": ["Disponibilità liquide"],
+        "Importo (€)": [110_000]
+    })
 
-if demo_mode:
+    demo_pas = pd.DataFrame({
+        "Passività e Patrimonio Netto": ["Debiti a breve", "Patrimonio netto"],
+        "Importo (€)": [85_000, 420_000]
+    })
+
     bilanci = {
-        ("Alpha Srl", 2022): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas},
+        ("Alpha Srl", 2022): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas}
     }
+
 elif uploaded_files:
     for f in uploaded_files:
         try:
