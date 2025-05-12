@@ -1,6 +1,8 @@
 📊 Cruscotto Finanziario per PMI
 CruscottoPMI è un'applicazione sviluppata in Python con Streamlit, progettata per analizzare, confrontare e monitorare gli indicatori economico-finanziari delle piccole e medie imprese (PMI) in modo intuitivo ed efficiente.
 
+***12/05/25*** la modalità demo è attualmente minima per bugfix e miglioramento
+
 ⚙️ Funzionalità principali
 📁 Caricamento multiplo di bilanci (uno per anno) da file Excel
 
