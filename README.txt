@@ -24,12 +24,29 @@ CruscottoPMI è un'applicazione sviluppata in Python con Streamlit, progettata p
 
 💾 Caching intelligente per prestazioni migliorate
 
+🧪 Test automatici
+
+Questa repository include una suite di test automatici sviluppata con `pytest`.
+
+### Test attivi:
+- ✅ Calcolo KPI con dati simulati (`calcola_kpi`)
+- ✅ Caricamento Excel da file virtuale (`load_excel`)
+- ✅ Gestione fogli mancanti nel file Excel
+- ✅ Caricamento benchmark da file CSV (`load_benchmark`)
+
+Per eseguire i test:
+
+```bash
+pytest -v
+
+
 📂 Struttura dei file
 
 📦 cruscottopmi/
 ├── app.py                 # Applicazione principale Streamlit
 ├── utils.py               # Funzioni ausiliarie e caching
 ├── requirements.txt       # Dipendenze per l’ambiente virtuale
+├── tests
 ├── changelog.txt
 ├── benchmarks/
 │   └── benchmark_esempio.csv
