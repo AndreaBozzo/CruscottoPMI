@@ -32,8 +32,7 @@ Modifica
 ├── app.py                 # Applicazione principale Streamlit
 ├── utils.py               # Funzioni ausiliarie e caching
 ├── requirements.txt       # Dipendenze per l’ambiente virtuale
-├── demo/
-│   └── file_demo.xlsx     # File demo pre-caricato
+├── changelog.txt
 ├── benchmarks/
 │   └── benchmark_esempio.csv
 🚀 Avvio dell'app
