@@ -32,7 +32,6 @@ tabella_kpi, tabella_voci, bilanci = [], [], {}
 if demo_mode:
     bilanci = {
         ("Alpha Srl", 2022): {"ce": demo_ce, "attivo": demo_att, "passivo": demo_pas},
-}
     }
 elif uploaded_files:
     for f in uploaded_files:
