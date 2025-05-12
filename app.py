@@ -56,10 +56,15 @@ elif uploaded_files:
         try:
             ce, att, pas = load_excel(f)
             name_parts = f.name.replace(".xlsx", "").split("_")
-            azi, yr = (name_parts + ["Sconosciuta"])[0:2]
-            bilanci[(azi, yr)] = {"ce": ce, "attivo": att, "passivo": pas}
-        except Exception as e:
-            st.error(f"Errore nel file {f.name}: {e}")
+            azi, yr_raw = (name_parts + ["Sconosciuta", "0"])[0:2]
+            try:
+                anno = int(float(yr_raw))
+            except (ValueError, TypeError):
+                st.warning(f"⚠️ Anno non valido nel file: {f.name}")
+                continue
+            bilanci[(azi, anno)] = {"ce": ce, "attivo": att, "passivo": pas}
+         except Exception as e:
+             st.error(f"Errore nel file {f.name}: {e}")
 
             
 # Funzione per il calcolo dei KPI
