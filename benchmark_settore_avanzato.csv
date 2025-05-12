@@ -1,0 +1,13 @@
+Settore,KPI,Valore
+Retail,EBITDA Margin,10.5
+Retail,ROE,8.0
+Retail,ROI,6.5
+Retail,Current Ratio,1.4
+Manufacturing,EBITDA Margin,12.0
+Manufacturing,ROE,9.0
+Manufacturing,ROI,7.0
+Manufacturing,Current Ratio,1.5
+IT,EBITDA Margin,18.0
+IT,ROE,12.0
+IT,ROI,9.0
+IT,Current Ratio,1.8
