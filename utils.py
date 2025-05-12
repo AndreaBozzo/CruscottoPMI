@@ -65,3 +65,4 @@ def calcola_kpi(ce, att, pas, benchmark):
         return kpi_row
     except Exception as e:
         return {"Errore": str(e)}
+
