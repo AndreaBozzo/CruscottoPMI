@@ -64,8 +64,7 @@ elif uploaded_files:
             bilanci[(azi, yr_str)] = {"ce": ce, "attivo": att, "passivo": pas}
         except Exception as e:
             st.error(f"Errore nel file {f.name}: {e}")
-
-# Il resto del codice rimane invariato e può essere incollato dopo questa sezione           
+     
 # Funzione per il calcolo dei KPI
 @st.cache_data(show_spinner=False)
 def calcola_kpi(ce, att, pas, benchmark):
