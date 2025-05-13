@@ -68,10 +68,10 @@ def calcola_kpi(ce, att, pas, benchmark):
     except Exception as e:
         return {"Errore": str(e)}
 
-def estrai_aziende_anni_disponibili(bilanci):
-    aziende = sorted(set(b['azienda'] for b in bilanci))
-    anni = sorted(set(b['anno'] for b in bilanci))
+def estrai_aziende_anni_disponibili(bilanci_dict):
+    aziende = sorted(set(k[0] for k in bilanci_dict.keys()))
+    anni = sorted(set(k[1] for k in bilanci_dict.keys()))
     return aziende, anni
 
-def filtra_bilanci(bilanci, azienda, anni):
-    return [b['dataframe'] for b in bilanci if b['azienda'] == azienda and b['anno'] in anni]
+def filtra_bilanci(bilanci_dict, azienda, anni):
+    return [df for (az, anno), df in bilanci_dict.items() if az == azienda and anno in anni]
