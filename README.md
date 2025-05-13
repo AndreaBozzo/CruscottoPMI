@@ -1,80 +1,90 @@
 # 📊 Cruscotto Finanziario per PMI
 
-![Logo CruscottoPMI](https://raw.githubusercontent.com/AndreaBozzo/CruscottoPMI/main/.github/logo.png)
-
-**CruscottoPMI** è un'applicazione interattiva sviluppata in Streamlit per analizzare i bilanci aziendali su più anni, confrontare aziende e monitorare i principali indicatori di performance (KPI). Ideale per piccole e medie imprese, consulenti e analisti.
-
----
-
-## ✨ Interfaccia
-
-![Screenshot](https://raw.githubusercontent.com/AndreaBozzo/CruscottoPMI/main/.github/screenshot_home.png)
+Benvenuto nel Cruscotto Finanziario per PMI – uno strumento interattivo sviluppato in **Python + Streamlit** per analizzare i bilanci aziendali con indicatori, benchmark e visualizzazioni avanzate.
 
 ---
 
 ## 🚀 Funzionalità principali
 
-- 📁 Caricamento file Excel strutturati per anno
-- 🧪 Modalità demo con aziende simulate
-- 📊 Calcolo KPI: EBITDA Margin, ROE, ROI, Current Ratio
-- 📈 Analisi variazioni YoY
-- 📘 Confronto voci di bilancio
-- 📤 Export risultati in Excel e PDF
-- ✏️ Personalizzazione benchmark
-- 💡 Interfaccia moderna e responsive
+- ✅ **Caricamento file Excel** con CE, Attivo e Passivo
+- 🧪 **Modalità Demo** integrata (DemoCorp 2022–2023 con variazioni)
+- 📈 Analisi **KPI chiave**: ROE, ROI, Current Ratio, EBITDA Margin
+- 📊 Modulo **DuPont**, **Z-Score di Altman**
+- 📉 Grafico **Radar KPI** e **Heatmap temporale**
+- 🔁 Analisi **Year-over-Year**
+- 📎 Confronto tra aziende/anni multipli
+- 📝 Esportazione report in PDF/Excel
 
 ---
 
-## 🗂️ Struttura multipagina
+## 🧪 Modalità Demo
 
-| Pagina              | Descrizione                             |
-|---------------------|------------------------------------------|
-| `00_home.py`        | Caricamento dati, modalità demo, benchmark |
-| `pages/01_kpi.py`   | Calcolo e visualizzazione KPI            |
-| `pages/02_yoy.py`   | Analisi variazione anno su anno          |
-| `pages/03_confronto.py` | Confronto grafico voci bilancio         |
-| `pages/04_export.py`| Download Excel e PDF                     |
+Non hai bilanci reali da caricare? Attiva la modalità demo direttamente nella home!
 
----
+```bash
+DemoCorp 2022:
+  Ricavi: 1.000.000 €
+  Utile netto: 80.000 €
+DemoCorp 2023:
+  Ricavi: 1.120.000 €
+  Utile netto: 89.600 €
+```
 
-## 📂 Formato file Excel richiesto
-
-Ogni file `.xlsx` deve contenere i seguenti fogli:
-- `Conto Economico`
-- `Attivo`
-- `Passivo`
-
-Con una colonna chiamata `Importo (€)`.
+La demo è **completa** e compatibile con tutti i moduli, utile per:
+- test funzionali
+- demo live
+- colloqui e portfolio
 
 ---
 
-## ▶️ Come eseguire
+## 📁 Struttura dei file
 
-Assicurati di avere Python installato, poi:
+```
+src/
+  cruscotto_pmi/
+    ├── utils.py
+    └── ...
+pages/
+  ├── 01_kpi.py
+  ├── 02_yoy.py
+  ├── 03_confronto.py
+  └── 05_analisi_avanzata.py
+00_home.py
+```
+
+---
+
+## ⚙️ Requisiti
+
+- Python 3.10+
+- Pandas
+- Streamlit
+- Plotly
+
+Installa tutto con:
 
 ```bash
 pip install -r requirements.txt
+```
+
+---
+
+## ▶️ Avvio
+
+```bash
 streamlit run 00_home.py
 ```
 
 ---
 
-## ☁️ Deploy su Streamlit Cloud
+## 👤 Autore
 
-1. Crea un account su [streamlit.io/cloud](https://streamlit.io/cloud)
-2. Collega la tua repo GitHub
-3. Imposta come file principale: `00_home.py`
-4. Aggiungi il file `.streamlit/config.toml` per un tema personalizzato (già incluso)
-
----
-
-## 📬 Contatti
-
-Sviluppato da Andrea Bozzo  
-📧 andreabozzo92@gmail.com
+Andrea Bozzo  
+📫 andreabozzo92@gmail.com  
+🔗 [LinkedIn](https://www.linkedin.com/in/andrea-bozzo-/)
 
 ---
 
-## 📜 Licenza
+## 📌 Note finali
 
-Distribuito con licenza **MIT**
+Il progetto è in continua espansione. Ogni modulo è pensato per funzionare anche in assenza di file reali, grazie alla modalità demo integrata.
