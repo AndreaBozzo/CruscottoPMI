@@ -1,5 +1,3 @@
-#utils.py
-
 import pandas as pd
 import streamlit as st
 
@@ -18,28 +16,37 @@ def load_benchmark(file, default_benchmark):
     return {row["KPI"]: row["Valore"] for _, row in df_bm.iterrows()}
 
 def calcola_kpi(ce, att, pas, benchmark):
+    def get_val(df, voce_col, voce_name):
+        subset = df[df[voce_col] == voce_name]
+        return subset["Importo (€)"].values[0] if not subset.empty else 0
+
     try:
-        ricavi       = ce.loc[ce["Voce"] == "Ricavi", "Importo (€)"].values[0]
-        utile_netto  = ce.loc[ce["Voce"] == "Utile netto", "Importo (€)"].values[0]
-        ebit         = ce.loc[ce["Voce"] == "EBIT", "Importo (€)"].values[0]
-        spese_oper   = ce.loc[ce["Voce"] == "Spese operative", "Importo (€)"].values[0]
-        ammortamenti = ce.loc[ce["Voce"] == "Ammortamenti", "Importo (€)"].values[0] if "Ammortamenti" in ce["Voce"].values else 0
-        oneri_fin    = ce.loc[ce["Voce"] == "Oneri finanziari", "Importo (€)"].values[0] if "Oneri finanziari" in ce["Voce"].values else 0
+        ricavi       = get_val(ce, "Voce", "Ricavi")
+        utile_netto  = get_val(ce, "Voce", "Utile netto")
+        ebit         = get_val(ce, "Voce", "EBIT")
+        spese_oper   = get_val(ce, "Voce", "Spese operative")
+        ammortamenti = get_val(ce, "Voce", "Ammortamenti")
+        oneri_fin    = get_val(ce, "Voce", "Oneri finanziari")
         mol          = ricavi - spese_oper
-        liquidita    = att.loc[att["Attività"] == "Disponibilità liquide", "Importo (€)"].values[0]
-        debiti_brevi = pas.loc[pas["Passività e Patrimonio Netto"] == "Debiti a breve", "Importo (€)"].values[0]
-        patrimonio   = pas.loc[pas["Passività e Patrimonio Netto"] == "Patrimonio netto", "Importo (€)"].values[0]
+
+        liquidita    = get_val(att, "Attività", "Disponibilità liquide")
+        debiti_brevi = get_val(pas, "Passività e Patrimonio Netto", "Debiti a breve")
+        patrimonio   = get_val(pas, "Passività e Patrimonio Netto", "Patrimonio netto")
         totale_att   = att["Importo (€)"].sum()
+
+        if any(v == 0 for v in [ricavi, patrimonio, totale_att, debiti_brevi]):
+            return {"Errore": "Uno o più valori chiave sono zero o mancanti."}
 
         ebitda = ebit + spese_oper
         eda_m  = round(ebitda / ricavi * 100, 2)
         roe    = round(utile_netto / patrimonio * 100, 2)
         roi    = round(ebit / totale_att * 100, 2)
         curr_r = round(liquidita / debiti_brevi, 2)
-        indice = round(((eda_m / benchmark["EBITDA Margin"] +
-                         roe / benchmark["ROE"] +
-                         roi / benchmark["ROI"] +
-                         curr_r / benchmark["Current Ratio"]) / 4) * 10, 1)
+
+        indice = round(((eda_m / benchmark.get("EBITDA Margin", 1)) +
+                        (roe / benchmark.get("ROE", 1)) +
+                        (roi / benchmark.get("ROI", 1)) +
+                        (curr_r / benchmark.get("Current Ratio", 1))) / 4 * 10, 1)
 
         valutazione = "Ottima solidità ✅"
         if any([eda_m < 10, roe < 5, roi < 5, curr_r < 1]):
@@ -57,5 +64,6 @@ def calcola_kpi(ce, att, pas, benchmark):
         }
 
         return kpi_row
+
     except Exception as e:
         return {"Errore": str(e)}
