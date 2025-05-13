@@ -15,7 +15,7 @@ if not bilanci:
 tabella_kpi, tabella_voci = [], []
 
 for (azi, yr), dfs in bilanci.items():
-    row = calcola_kpi(dfs["ce"], dfs["attivo"], dfs["passivo"], benchmark)
+    row = calcola_kpi(dfs["ce"], dfs["att"], dfs["pas"], benchmark)
     if "Errore" in row:
         st.warning(f"Errore su {azi} {yr}: {row['Errore']}")
         continue
