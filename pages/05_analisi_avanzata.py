@@ -1,36 +1,32 @@
-# pages/05_analisi_avanzata.py
+import sys
+import os
+
+# ✅ Fix definitivo per includere la cartella src nel path
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SRC_DIR = os.path.join(BASE_DIR, "src")
+
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+
+from cruscotto_pmi.utils import estrai_aziende_anni_disponibili, filtra_bilanci, calcola_kpi
 
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-import sys
-import os
-
-# ✅ Inserimento dinamico del path alla cartella src/
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(current_dir, "..", "src"))
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
-
-from cruscotto_pmi.utils import estrai_aziende_anni_disponibili, filtra_bilanci, calcola_kpi
 
 st.set_page_config(layout="wide")
 st.title("📈 Analisi Avanzata")
 st.markdown("Analisi finanziaria approfondita: DuPont, Z-Score, radar KPI e altro.")
 
-# --- Recupero dati dal session_state
 if "bilanci" not in st.session_state or not st.session_state["bilanci"]:
     st.warning("⚠️ Carica prima almeno un bilancio nella sezione Home.")
     st.stop()
 
-# --- Selezione dinamica
 aziende_disponibili, anni_disponibili = estrai_aziende_anni_disponibili(st.session_state["bilanci"])
-
 azienda_sel = st.selectbox("Seleziona azienda", aziende_disponibili)
 anno_sel = st.selectbox("Seleziona anno", sorted(anni_disponibili, reverse=True))
 
-# --- Filtro del bilancio selezionato
 df_filtrato = filtra_bilanci(st.session_state["bilanci"], azienda_sel, [anno_sel])
 df = df_filtrato[0] if df_filtrato else None
 
@@ -42,8 +38,6 @@ st.divider()
 
 # --- Analisi DuPont ---
 with st.expander("📊 Analisi DuPont"):
-    st.markdown("Scomposizione del ROE: utile netto, margine operativo, rotazione attivi, leva finanziaria.")
-
     def estrai_valore(df, parole_chiave):
         for parola in parole_chiave:
             match = df[df['Voce'].str.contains(parola, case=False, na=False)]
@@ -143,4 +137,3 @@ with st.expander("🌡️ Heatmap Indicatori"):
         st.dataframe(heatmap_data.style.background_gradient(cmap='RdYlGn', axis=1))
     else:
         st.info("Impossibile generare la heatmap: KPI mancanti.")
-
