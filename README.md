@@ -1,3 +1,5 @@
+![Logo](.github/logo.png)
+
 # 📊 Cruscotto Finanziario per PMI
 
 Benvenuto nel Cruscotto Finanziario per PMI – uno strumento interattivo sviluppato in **Python + Streamlit** per analizzare i bilanci aziendali con indicatori, benchmark e visualizzazioni avanzate.
