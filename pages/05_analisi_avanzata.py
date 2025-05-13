@@ -6,7 +6,12 @@ import plotly.graph_objects as go
 import plotly.express as px
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+
+# ✅ Inserimento dinamico del path alla cartella src/
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, "..", "src"))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
 from cruscotto_pmi.utils import estrai_aziende_anni_disponibili, filtra_bilanci, calcola_kpi
 
@@ -138,3 +143,4 @@ with st.expander("🌡️ Heatmap Indicatori"):
         st.dataframe(heatmap_data.style.background_gradient(cmap='RdYlGn', axis=1))
     else:
         st.info("Impossibile generare la heatmap: KPI mancanti.")
+
