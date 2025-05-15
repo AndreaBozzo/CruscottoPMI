@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 streamlit>=1.30.0
 pandas>=2.1.0
 plotly>=5.18.0
@@ -5,3 +6,11 @@ xlsxwriter>=3.1.0
 openpyxl>=3.1.2
 reportlab>=4.0.4
 matplotlib
+=======
+streamlit
+pandas
+plotly
+xlsxwriter
+openpyxl
+reportlab
+>>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)

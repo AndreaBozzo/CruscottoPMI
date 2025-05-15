@@ -6,7 +6,11 @@ SRC_DIR = os.path.join(BASE_DIR, "src")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
+<<<<<<< HEAD
 from cruscotto_pmi.utils import estrai_aziende_anni_disponibili, filtra_bilanci, calcola_kpi
+=======
+from cruscotto_pmi.utils import estrai_aziende_anni_disponibili, filtra_bilanci, calcola_kpi, genera_grafico_voci, genera_pdf
+>>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)
 
 import streamlit as st
 import pandas as pd
@@ -118,3 +122,29 @@ with st.expander("📍 Radar KPI"):
         st.dataframe(df_heat.style.background_gradient(axis=1))
     else:
         st.info("Heatmap non disponibile: nessun dato valido.")
+<<<<<<< HEAD
+=======
+df_export = st.session_state.get("df_kpi")  # o df_confronto / df_avanzata
+if df_export is not None and not df_export.empty:
+    st.subheader("📤 Esporta risultati")
+
+    note = st.text_area("Note personali per il report", key="note_export_modulo_X")
+    if st.button("📥 Esporta Report", key="btn_export_modulo_X"):
+
+        grafico_kpi_buf = genera_grafico_kpi(df_export)
+        grafico_voci_buf = genera_grafico_voci(st.session_state.get("df_voci", pd.DataFrame()))
+
+        pdf_buf = genera_pdf(df_export, note, grafico_kpi_buf, grafico_voci_buf)
+
+        excel_buf = BytesIO()
+        df_export.to_excel(excel_buf, index=False)
+        excel_buf.seek(0)
+
+        zip_buf = BytesIO()
+        with ZipFile(zip_buf, 'w') as zipf:
+            zipf.writestr("report.pdf", pdf_buf.getvalue())
+            zipf.writestr("export.xlsx", excel_buf.getvalue())
+        zip_buf.seek(0)
+
+        st.download_button("📁 Scarica ZIP", zip_buf.getvalue(), file_name="report.zip", key="zip_export_modulo_X")
+>>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)

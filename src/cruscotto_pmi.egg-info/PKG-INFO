@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: cruscotto-pmi
+Version: 0.1.0
+Summary: Dashboard Streamlit per KPI finanziari delle PMI
+Author: Andrea Bozzo
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: streamlit
+Requires-Dist: pandas
+Requires-Dist: openpyxl
+Requires-Dist: plotly
+Requires-Dist: reportlab

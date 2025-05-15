@@ -1,0 +1,11 @@
+README.txt
+pyproject.toml
+src/cruscotto_pmi/__init__.py
+src/cruscotto_pmi/app.py
+src/cruscotto_pmi/utils.py
+src/cruscotto_pmi.egg-info/PKG-INFO
+src/cruscotto_pmi.egg-info/SOURCES.txt
+src/cruscotto_pmi.egg-info/dependency_links.txt
+src/cruscotto_pmi.egg-info/entry_points.txt
+src/cruscotto_pmi.egg-info/requires.txt
+src/cruscotto_pmi.egg-info/top_level.txt

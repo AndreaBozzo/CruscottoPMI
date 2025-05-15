@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cruscotto-pmi"
+version = "0.1.0"
+description = "Dashboard Streamlit per KPI finanziari delle PMI"
+authors = [{ name = "Andrea Bozzo" }]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit",
+    "pandas",
+    "openpyxl",
+    "plotly",
+    "reportlab"
+]
+
+[tool.setuptools]
+packages = ["cruscotto_pmi"]
+package-dir = {"" = "src"}
+
+[project.scripts]
+cruscotto-pmi = "cruscotto_pmi.app:main"

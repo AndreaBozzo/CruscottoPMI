@@ -1,5 +1,17 @@
 import pandas as pd
 import streamlit as st
+<<<<<<< HEAD
+=======
+import matplotlib.pyplot as plt
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.lib.utils import ImageReader
+from zipfile import ZipFile
+import os
+from datetime import datetime
+>>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)
 
 @st.cache_data(show_spinner=False)
 def load_excel(file):
@@ -75,3 +87,197 @@ def estrai_aziende_anni_disponibili(bilanci_dict):
 
 def filtra_bilanci(bilanci_dict, azienda, anni):
     return [df for (az, anno), df in bilanci_dict.items() if az == azienda and anno in anni]
+<<<<<<< HEAD
+=======
+
+def genera_grafico_kpi(df):
+    if "Azienda" in df.columns and "Indice Sintetico" in df.columns:
+        fig, ax = plt.subplots(figsize=(6, 4), dpi=150)
+        bars = ax.bar(df["Azienda"], df["Indice Sintetico"], color="#1f77b4")
+        ax.set_title("Indice Sintetico per Azienda")
+        ax.set_ylabel("Valore")
+        ax.set_xticklabels(df["Azienda"], rotation=45, ha="right")
+        for bar in bars:
+            yval = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, yval + 0.5, f"{yval:.1f}", ha='center', fontsize=8)
+        plt.tight_layout()
+        buf = BytesIO()
+        plt.savefig(buf, format='png', dpi=150)
+        buf.seek(0)
+        return buf
+    return None
+
+def genera_grafico_voci(df):
+    if "Voce" in df.columns and "Importo (€)" in df.columns:
+        fig, ax = plt.subplots(figsize=(6, 4), dpi=150)
+        data = df.groupby("Voce")["Importo (€)"].sum().sort_values()
+        bars = ax.barh(data.index, data.values, color="#ff7f0e")
+        ax.set_title("Distribuzione delle Voci di Bilancio")
+        for bar in bars:
+            xval = bar.get_width()
+            ax.text(xval + max(data.values)*0.01, bar.get_y() + bar.get_height()/2, f"{xval:,.0f}", va='center', fontsize=8)
+        plt.tight_layout()
+        buf = BytesIO()
+        plt.savefig(buf, format='png', dpi=150)
+        buf.seek(0)
+        return buf
+    return None
+
+def genera_pdf(df, note, grafico_kpi_buf=None, grafico_voci_buf=None):
+    buf = BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    width, height = A4
+
+    logo_path = os.path.join(".github", "logo.png")
+    if os.path.exists(logo_path):
+        logo = ImageReader(logo_path)
+        c.drawImage(logo, width/2 - 3*cm, height - 7*cm, width=6*cm, preserveAspectRatio=True, mask='auto')
+
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(width / 2, height - 8.5 * cm, "Report Finanziario PMI")
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(width / 2, height - 10 * cm, f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    c.showPage()
+
+    # Sommario
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(2 * cm, height - 2 * cm, "📄 Sommario")
+    c.setFont("Helvetica", 11)
+    y = height - 3 * cm
+    c.drawString(2 * cm, y, "1. KPI Aziendali")
+    y -= 0.6 * cm
+    if grafico_kpi_buf:
+        c.drawString(2 * cm, y, "2. Grafico KPI")
+        y -= 0.6 * cm
+    if grafico_voci_buf:
+        c.drawString(2 * cm, y, "3. Grafico Voci di Bilancio")
+        y -= 0.6 * cm
+    if note:
+        c.drawString(2 * cm, y, "4. Note dell’utente")
+    c.showPage()
+
+    # KPI Aziendali
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(2 * cm, height - 2 * cm, "📊 KPI Aziendali")
+    c.setFont("Helvetica", 10)
+    y = height - 3.5 * cm
+    for idx, row in df.iterrows():
+        for key in ["Azienda", "Anno", "EBITDA Margin", "ROE", "ROI", "Current Ratio", "Indice Sintetico", "Valutazione"]:
+            val = row.get(key, "-")
+            c.drawString(2 * cm, y, f"{key}: {val}")
+            y -= 0.5 * cm
+        y -= 0.3 * cm
+        if y < 4 * cm:
+            c.showPage()
+            y = height - 3.2 * cm
+
+    # Grafico KPI
+    if grafico_kpi_buf:
+        c.showPage()
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(2 * cm, height - 2 * cm, "📈 Grafico KPI")
+        grafico_img = ImageReader(grafico_kpi_buf)
+        c.drawImage(grafico_img, 2 * cm, height - 16 * cm, width - 4 * cm, 12 * cm, preserveAspectRatio=True, mask='auto')
+
+    # Grafico Voci
+    if grafico_voci_buf:
+        c.showPage()
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(2 * cm, height - 2 * cm, "📊 Grafico Voci di Bilancio")
+        grafico_voci_img = ImageReader(grafico_voci_buf)
+        c.drawImage(grafico_voci_img, 2 * cm, height - 16 * cm, width - 4 * cm, 12 * cm, preserveAspectRatio=True, mask='auto')
+
+    # Note utente
+    if note:
+        c.showPage()
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(2 * cm, height - 2 * cm, "📝 Note dell'utente")
+        c.setFont("Helvetica", 10)
+        y = height - 3 * cm
+        for line in note.splitlines():
+            c.drawString(2 * cm, y, line)
+            y -= 0.5 * cm
+            if y < 3 * cm:
+                c.showPage()
+                y = height - 3 * cm
+
+    c.save()
+    buf.seek(0)
+    return buf
+
+# === SUPER PDF MIGLIORATO ===
+def genera_super_pdf(df_kpi, df_voci, df_yoy, note):
+    buf = BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    width, height = A4
+
+    logo_path = os.path.join("assets", "logo.png")
+    st.write("✅ Verifica logo - Path:", logo_path)
+    st.write("✅ Logo trovato:", os.path.exists(logo_path))
+
+    if os.path.exists(logo_path):
+        logo = ImageReader(logo_path)
+    try:
+        c.drawImage(logo, x=2*cm, y=height - 5*cm, width=4*cm, height=2*cm, mask='auto')
+        c.setStrokeColorRGB(0.2, 0.2, 0.2)
+        c.rect(2*cm, height - 5*cm, 4*cm, 2*cm)  # bordo per visibilità
+    except Exception as e:
+        print("Errore logo:", e)
+        st.warning(f"Errore nel disegno del logo: {e}")
+
+
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(width / 2, height - 8.5 * cm, "Report Finanziario Completo")
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(width / 2, height - 10 * cm, f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    c.showPage()
+
+    def draw_table(title, df):
+        if df.empty:
+            return
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(2 * cm, height - 2 * cm, title)
+        c.setFont("Helvetica", 10)
+        y = height - 3.5 * cm
+        for _, row in df.iterrows():
+            lines = []
+            for k, v in row.items():
+                if isinstance(v, float):
+                    v = round(v, 2)
+                lines.append(f"{k}: {v}")
+            for line in lines:
+                if len(line) > 110:
+                    parts = [line[i:i+110] for i in range(0, len(line), 110)]
+                    for p in parts:
+                        c.drawString(2 * cm, y, p)
+                        y -= 0.4 * cm
+                else:
+                    c.drawString(2 * cm, y, line)
+                    y -= 0.4 * cm
+                if y < 3.5 * cm:
+                    c.showPage()
+                    y = height - 3.5 * cm
+            y -= 0.3 * cm  # separatore tra righe
+        c.showPage()
+
+    draw_table("📊 KPI Aziendali", df_kpi)
+    draw_table("📘 Voci di Bilancio", df_voci)
+    draw_table("📈 Analisi Variazioni YoY", df_yoy)
+
+    if note:
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(2 * cm, height - 2 * cm, "📝 Note dell'utente")
+        c.setFont("Helvetica", 10)
+        y = height - 3.5 * cm
+        for line in note.splitlines():
+            for part in [line[i:i+120] for i in range(0, len(line), 120)]:
+                c.drawString(2 * cm, y, part)
+                y -= 0.5 * cm
+                if y < 3 * cm:
+                    c.showPage()
+                    y = height - 3 * cm
+
+    c.save()
+    buf.seek(0)
+    return buf
+>>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)
