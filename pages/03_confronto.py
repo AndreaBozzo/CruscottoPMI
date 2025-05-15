@@ -20,8 +20,6 @@ dfb = df_voci[df_voci["Anno"].isin(anni_sel)]
 for voce in voci_sel:
     fig = px.bar(dfb, x="Azienda", y=voce, color="Anno", barmode="group", title=voce)
     st.plotly_chart(fig, use_container_width=True)
-<<<<<<< HEAD
-=======
 
 
 
@@ -53,4 +51,3 @@ if df_export is not None and not df_export.empty:
 
         st.success("✅ Report confronto generato!")
         st.download_button("📁 Scarica ZIP Confronto", zip_buf.getvalue(), file_name="report_confronto.zip")
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)

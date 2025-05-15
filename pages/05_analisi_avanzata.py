@@ -6,11 +6,7 @@ SRC_DIR = os.path.join(BASE_DIR, "src")
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-<<<<<<< HEAD
-from cruscotto_pmi.utils import estrai_aziende_anni_disponibili, filtra_bilanci, calcola_kpi
-=======
 from cruscotto_pmi.utils import estrai_aziende_anni_disponibili, filtra_bilanci, calcola_kpi, genera_grafico_voci, genera_pdf
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)
 
 import streamlit as st
 import pandas as pd
@@ -122,8 +118,6 @@ with st.expander("📍 Radar KPI"):
         st.dataframe(df_heat.style.background_gradient(axis=1))
     else:
         st.info("Heatmap non disponibile: nessun dato valido.")
-<<<<<<< HEAD
-=======
 df_export = st.session_state.get("df_kpi")  # o df_confronto / df_avanzata
 if df_export is not None and not df_export.empty:
     st.subheader("📤 Esporta risultati")
@@ -147,4 +141,3 @@ if df_export is not None and not df_export.empty:
         zip_buf.seek(0)
 
         st.download_button("📁 Scarica ZIP", zip_buf.getvalue(), file_name="report.zip", key="zip_export_modulo_X")
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)

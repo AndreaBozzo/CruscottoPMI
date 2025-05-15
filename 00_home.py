@@ -83,8 +83,6 @@ def carica_demo_avanzata():
     }
     st.session_state["modalita_demo"] = True
 
-<<<<<<< HEAD
-=======
     # Calcolo YoY demo da bilanci demo
     df_ce_2022 = bilanci[("DemoCorp", 2022)]["ce"]
     df_ce_2023 = bilanci[("DemoCorp", 2023)]["ce"]
@@ -93,7 +91,6 @@ def carica_demo_avanzata():
     df_yoy["Anno Attuale"] = df_yoy["Importo (€) 2023"]
     df_yoy["Variazione %"] = ((df_yoy["Anno Attuale"] - df_yoy["Anno Precedente"]) / df_yoy["Anno Precedente"]) * 100
     st.session_state["df_yoy"] = df_yoy[["Voce", "Anno Precedente", "Anno Attuale", "Variazione %"]]
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)
 
 # ---- UI SELEZIONE MODALITÀ ----
 st.markdown("### 🧭 Selezione modalità")
@@ -138,10 +135,6 @@ elif uploaded_files:
             st.error(f"Errore nel file {f.name}: {e}")
     st.session_state["bilanci"] = bilanci
     st.session_state["modalita_demo"] = False
-<<<<<<< HEAD
-
-=======
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)
 # ---- BENCHMARK ----
 st.markdown("---")
 st.markdown("### ✏️ Imposta benchmark di confronto")

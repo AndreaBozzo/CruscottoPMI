@@ -1,11 +1,7 @@
 
 import streamlit as st
 import pandas as pd
-<<<<<<< HEAD
-from cruscotto_pmi.utils import calcola_kpi
-=======
 from cruscotto_pmi.utils import calcola_kpi, genera_grafico_kpi, genera_grafico_voci, genera_pdf
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)
 
 st.title("📊 Dashboard KPI")
 
@@ -64,8 +60,6 @@ if not riga.empty:
         colore = "🟢" if valore > 10 else "🟡" if valore > 5 else "🔴"
         col = col1 if i % 2 == 0 else col2
         col.markdown(f"**{colore} {kpi}:** `{valore:.2f} {unita}`")
-<<<<<<< HEAD
-=======
 df_export = st.session_state.get("df_kpi")  # o df_confronto / df_avanzata
 if df_export is not None and not df_export.empty:
     st.subheader("📤 Esporta risultati")
@@ -89,4 +83,3 @@ if df_export is not None and not df_export.empty:
         zip_buf.seek(0)
 
         st.download_button("📁 Scarica ZIP", zip_buf.getvalue(), file_name="report.zip", key="zip_export_modulo_X")
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)

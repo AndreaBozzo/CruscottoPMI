@@ -1,7 +1,5 @@
 import pandas as pd
 import streamlit as st
-<<<<<<< HEAD
-=======
 import matplotlib.pyplot as plt
 from io import BytesIO
 from reportlab.pdfgen import canvas
@@ -11,7 +9,6 @@ from reportlab.lib.utils import ImageReader
 from zipfile import ZipFile
 import os
 from datetime import datetime
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)
 
 @st.cache_data(show_spinner=False)
 def load_excel(file):
@@ -87,8 +84,6 @@ def estrai_aziende_anni_disponibili(bilanci_dict):
 
 def filtra_bilanci(bilanci_dict, azienda, anni):
     return [df for (az, anno), df in bilanci_dict.items() if az == azienda and anno in anni]
-<<<<<<< HEAD
-=======
 
 def genera_grafico_kpi(df):
     if "Azienda" in df.columns and "Indice Sintetico" in df.columns:
@@ -280,4 +275,3 @@ def genera_super_pdf(df_kpi, df_voci, df_yoy, note):
     c.save()
     buf.seek(0)
     return buf
->>>>>>> 0c3ef1b (🚀 Versione stabile - Export completo e layout PDF migliorato)

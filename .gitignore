@@ -1,0 +1,25 @@
+# Cache e build Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.pyo
+
+# Config editor
+.vscode/
+.idea/
+
+# File temporanei Streamlit o di sistema
+.DS_Store
+*.log
+
+# File generati (output PDF, Excel, ZIP)
+*.xlsx
+*.pdf
+*.zip
+
+# Ambienti virtuali
+venv/
+.env
+
+# Repository Git annidate (caso precedente)
+CruscottoPMI/.git
