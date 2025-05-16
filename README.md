@@ -1,6 +1,7 @@
 # 📊 CruscottoPMI
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cruscottopmi-appv3eny73ucrbqzzkdb8ic.streamlit.app/)
+![version](badge_v0.4.svg)
 
 **Cruscotto Finanziario per PMI** è un'applicazione interattiva sviluppata in **Python + Streamlit** per l'analisi automatizzata dei bilanci aziendali. Consente di caricare file Excel, calcolare KPI, confrontare voci di bilancio tra anni e generare report PDF professionali.
 

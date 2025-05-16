@@ -2,32 +2,68 @@
 import streamlit as st
 import pandas as pd
 from cruscotto_pmi.utils import calcola_kpi, genera_grafico_kpi, genera_grafico_voci, genera_pdf
+from io import BytesIO
+from zipfile import ZipFile
 
 st.title("📊 Dashboard KPI")
 
 bilanci = st.session_state.get("bilanci", {})
+
+# Fallback per demo
+if st.session_state.get("modalita_demo", False) and not bilanci:
+    bilanci_df = st.session_state.get("bilanci_df", [])
+    bilanci = {}
+    for df in bilanci_df:
+        if {"Azienda", "Anno"}.issubset(df.columns):
+            azienda = df["Azienda"].iloc[0]
+            anno = int(df["Anno"].iloc[0])
+            bilanci[(azienda, anno)] = df
+    st.session_state["bilanci"] = bilanci
+
 benchmark = st.session_state.get("benchmark", {})
 
 if not bilanci:
-    st.warning("⚠️ Carica prima i bilanci dalla Home.")
+    st.warning("⚠️ Nessun bilancio disponibile.")
     st.stop()
 
-tabella_kpi, tabella_voci = [], []
+tabella_kpi = []
+tabella_voci = []
 
-for (azi, yr), dfs in bilanci.items():
-    row = calcola_kpi(dfs["ce"], dfs["att"], dfs["pas"], benchmark)
+for (azi, yr), df in bilanci.items():
+    if not isinstance(df, pd.DataFrame) or "Tipo" not in df.columns:
+        continue
+    try:
+        df_ce = df[df["Tipo"] == "Conto Economico"]
+        df_att = df[df["Tipo"] == "Attivo"]
+        df_pas = df[df["Tipo"] == "Passivo"]
+        row = calcola_kpi(df_ce, df_att, df_pas, benchmark)
+    except Exception as e:
+        st.warning(f"Errore su {azi} {yr}: {e}")
+        continue
+
     if "Errore" in row:
         st.warning(f"Errore su {azi} {yr}: {row['Errore']}")
         continue
+
     row.update({"Azienda": azi, "Anno": int(float(yr))})
     tabella_kpi.append(row)
-    tabella_voci.append({
-        "Azienda": azi, "Anno": int(float(yr)),
-        **{k: row[k] for k in row if k not in benchmark and k not in ["Indice Sintetico", "Valutazione", "Azienda", "Anno"]}
-    })
+
+    for k, v in row.items():
+        if k not in benchmark and k not in ["Indice Sintetico", "Valutazione", "Azienda", "Anno"]:
+            tabella_voci.append({
+                "Azienda": azi,
+                "Anno": int(float(yr)),
+                "Voce": k,
+                "Importo (€)": v
+            })
 
 df_kpi = pd.DataFrame(tabella_kpi)
 df_voci = pd.DataFrame(tabella_voci)
+
+if df_kpi.empty:
+    st.warning("⚠️ Nessun KPI calcolabile. Verifica i dati caricati o la modalità demo.")
+    st.stop()
+
 df_kpi["Anno"] = df_kpi["Anno"].astype(str)
 df_voci["Anno"] = df_voci["Anno"].astype(str)
 
@@ -60,7 +96,9 @@ if not riga.empty:
         colore = "🟢" if valore > 10 else "🟡" if valore > 5 else "🔴"
         col = col1 if i % 2 == 0 else col2
         col.markdown(f"**{colore} {kpi}:** `{valore:.2f} {unita}`")
-df_export = st.session_state.get("df_kpi")  # o df_confronto / df_avanzata
+
+# Export
+df_export = st.session_state.get("df_kpi")
 if df_export is not None and not df_export.empty:
     st.subheader("📤 Esporta risultati")
 

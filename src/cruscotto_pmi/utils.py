@@ -12,39 +12,59 @@ from datetime import datetime
 
 @st.cache_data(show_spinner=False)
 def load_excel(file):
-    ce = pd.read_excel(file, sheet_name="Conto Economico")
-    att = pd.read_excel(file, sheet_name="Attivo")
-    pas = pd.read_excel(file, sheet_name="Passivo")
-    return ce, att, pas
+    try:
+        df = pd.read_excel(file)
+    except Exception as e:
+        st.error(f"❌ Errore nella lettura del file {file.name}: {e}")
+        return pd.DataFrame()
 
-@st.cache_data(show_spinner=False)
+    required_cols = {"Azienda", "Anno", "Tipo", "Voce", "Importo (€)"}
+    missing_cols = required_cols - set(df.columns)
+    if missing_cols:
+        st.warning(f"⚠️ Colonne mancanti nel file {file.name}: {', '.join(missing_cols)}")
+        return pd.DataFrame(columns=list(required_cols))
+
+    return df
+
 def load_benchmark(file, default_benchmark):
-    if file is None:
-        return default_benchmark.copy()
-    df_bm = pd.read_csv(file)
-    return {row["KPI"]: row["Valore"] for _, row in df_bm.iterrows()}
+    return default_benchmark.copy()
+
+def filtra_bilanci(bilanci_dict, azienda, anni):
+    result = []
+    for (az, anno), df in bilanci_dict.items():
+        if az == azienda and anno in anni and isinstance(df, pd.DataFrame):
+            result.append(df)
+    return result
+
+def estrai_aziende_anni_disponibili(bilanci_dict):
+    aziende = sorted(set(k[0] for k in bilanci_dict.keys()))
+    anni = sorted(set(k[1] for k in bilanci_dict.keys()))
+    return aziende, anni
 
 def calcola_kpi(ce, att, pas, benchmark):
-    def get_val(df, voce_col, voce_name):
-        subset = df[df[voce_col] == voce_name]
-        return subset["Importo (€)"].values[0] if not subset.empty else 0
+    def get_val(df, voce_name):
+        if "Voce" not in df.columns or "Importo (€)" not in df.columns:
+            return 0.0
+        subset = df[df["Voce"] == voce_name]
+        val = subset["Importo (€)"].values[0] if not subset.empty else 0.0
+        return float(val) if pd.notna(val) else 0.0
 
     try:
-        ricavi       = get_val(ce, "Voce", "Ricavi")
-        utile_netto  = get_val(ce, "Voce", "Utile netto")
-        ebit         = get_val(ce, "Voce", "EBIT")
-        spese_oper   = get_val(ce, "Voce", "Spese operative")
-        ammortamenti = get_val(ce, "Voce", "Ammortamenti")
-        oneri_fin    = get_val(ce, "Voce", "Oneri finanziari")
-        mol          = ricavi - spese_oper
+        ricavi       = get_val(ce, "Ricavi")
+        utile_netto  = get_val(ce, "Utile netto")
+        ebit         = get_val(ce, "EBIT")
+        spese_oper   = get_val(ce, "Spese operative")
+        ammortamenti = get_val(ce, "Ammortamenti")
+        oneri_fin    = get_val(ce, "Oneri finanziari")
+        mol          = ricavi - spese_oper if ricavi and spese_oper else 0.0
 
-        liquidita    = get_val(att, "Attività", "Disponibilità liquide")
-        debiti_brevi = get_val(pas, "Passività e Patrimonio Netto", "Debiti a breve")
-        patrimonio   = get_val(pas, "Passività e Patrimonio Netto", "Patrimonio netto")
-        totale_att   = att["Importo (€)"].sum()
+        liquidita    = get_val(att, "Disponibilità liquide")
+        debiti_brevi = get_val(pas, "Debiti a breve")
+        patrimonio   = get_val(pas, "Patrimonio netto")
+        totale_att   = att["Importo (€)"].sum() if "Importo (€)" in att.columns else 0.0
 
         if any(v == 0 for v in [ricavi, patrimonio, totale_att, debiti_brevi]):
-            return {"Errore": "Uno o più valori chiave sono zero o mancanti."}
+            return {"Errore": "Valori chiave assenti: Ricavi, Patrimonio, Attivo o Debiti"}
 
         ebitda = ebit + spese_oper
         eda_m  = round(ebitda / ricavi * 100, 2)
@@ -63,16 +83,24 @@ def calcola_kpi(ce, att, pas, benchmark):
         if all([eda_m < 10, roe < 5, roi < 5, curr_r < 1]):
             valutazione = "❌ Situazione critica"
 
-        kpi_row = {
-            "EBITDA Margin": eda_m, "ROE": roe, "ROI": roi, "Current Ratio": curr_r,
-            "Indice Sintetico": indice, "Valutazione": valutazione,
-            "Ricavi": ricavi, "EBIT": ebit, "Spese Operative": spese_oper,
-            "Ammortamenti": ammortamenti, "Oneri Finanziari": oneri_fin,
-            "MOL": mol, "Totale Attivo": totale_att, "Patrimonio Netto": patrimonio,
-            "Liquidità": liquidita, "Debiti a Breve": debiti_brevi
+        return {
+            "EBITDA Margin": eda_m,
+            "ROE": roe,
+            "ROI": roi,
+            "Current Ratio": curr_r,
+            "Indice Sintetico": indice,
+            "Valutazione": valutazione,
+            "Ricavi": ricavi,
+            "EBIT": ebit,
+            "Spese Operative": spese_oper,
+            "Ammortamenti": ammortamenti,
+            "Oneri Finanziari": oneri_fin,
+            "MOL": mol,
+            "Totale Attivo": totale_att,
+            "Patrimonio Netto": patrimonio,
+            "Liquidità": liquidita,
+            "Debiti a Breve": debiti_brevi
         }
-
-        return kpi_row
 
     except Exception as e:
         return {"Errore": str(e)}
@@ -83,7 +111,11 @@ def estrai_aziende_anni_disponibili(bilanci_dict):
     return aziende, anni
 
 def filtra_bilanci(bilanci_dict, azienda, anni):
-    return [df for (az, anno), df in bilanci_dict.items() if az == azienda and anno in anni]
+    result = []
+    for (az, anno), df in bilanci_dict.items():
+        if az == azienda and anno in anni and isinstance(df, pd.DataFrame):
+            result.append(df)
+    return result
 
 def genera_grafico_kpi(df):
     if "Azienda" in df.columns and "Indice Sintetico" in df.columns:
@@ -275,3 +307,17 @@ def genera_super_pdf(df_kpi, df_voci, df_yoy, note):
     c.save()
     buf.seek(0)
     return buf
+def genera_df_yoy(df1, df2, anno1, anno2, azienda=None):
+    try:
+        ce1 = df1[df1["Tipo"] == "Conto Economico"]
+        ce2 = df2[df2["Tipo"] == "Conto Economico"]
+
+        df_yoy = ce1.merge(ce2, on="Voce", suffixes=(f" {anno1}", f" {anno2}"))
+        df_yoy["Anno Precedente"] = df_yoy[f"Importo (€) {anno1}"]
+        df_yoy["Anno Attuale"] = df_yoy[f"Importo (€) {anno2}"]
+        df_yoy["Variazione %"] = ((df_yoy["Anno Attuale"] - df_yoy["Anno Precedente"]) / df_yoy["Anno Precedente"]) * 100
+        df_yoy["Azienda"] = azienda if azienda else "Sconosciuta"
+
+        return df_yoy[["Azienda", "Voce", "Anno Precedente", "Anno Attuale", "Variazione %"]]
+    except Exception as e:
+        return pd.DataFrame()
