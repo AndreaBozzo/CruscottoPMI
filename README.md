@@ -1,87 +1,45 @@
 # 📊 CruscottoPMI
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cruscottopmi-appv3eny73ucrbqzzkdb8ic.streamlit.app/)
+## 🌐 App online
+👉 [Avvia CruscottoPMI su Streamlit Cloud](https://cruscottopmi-appv3eny73ucrbqzzkdb8ic.streamlit.app/)
 
-**Cruscotto Finanziario per PMI** è un'applicazione interattiva sviluppata in **Python + Streamlit** per l'analisi automatizzata dei bilanci aziendali. Consente di caricare file Excel, calcolare KPI, confrontare voci di bilancio tra anni e generare report PDF professionali.
-
----
+**CruscottoPMI** è un'applicazione interattiva sviluppata con Python e Streamlit, pensata per l'analisi finanziaria di Piccole e Medie Imprese (PMI).  
+Fornisce insight chiari e visualizzazioni efficaci su bilanci, KPI, indicatori strutturali e benchmarking.
 
 ## 🚀 Funzionalità principali
 
-- 📈 Calcolo KPI: ROI, ROE, EBITDA Margin, Current Ratio, Indice Sintetico
-- 📊 Analisi Voci di Bilancio: visualizzazioni interattive
-- 📉 Analisi YoY: variazioni percentuali anno su anno
-- 🧪 Modalità Demo: per testare l'app senza caricare file
-- 📤 Export: generazione di PDF + Excel in ZIP, con logo e note
-- 🧠 Supporto multi-azienda e multi-anno
+- Caricamento multiplo di bilanci in formato Excel
+- Analisi KPI e indicatori finanziari
+- Benchmark personalizzabile o in modalità demo
+- Variazioni YoY e confronto multi-anno o multi-azienda
+- Heatmap, radar, gauge e dashboard interattive
+- Esportazione in PDF + Excel (singola azienda/anno)
+- Modalità demo per utilizzo senza caricamenti
 
----
+## 🗂 Struttura multipagina
 
-## 🧰 Requisiti
+- `00_home.py`: Home page con caricamento dati o demo
+- `01_scheda_azienda.py`: Riepilogo anagrafico e visivo del bilancio
+- `02_kpi.py`: KPI dinamici, radar e gauge
+- `03_confronto.py`: Analisi comparativa voci/aziende
+- `04_yoy.py`: Variazioni YoY con opzione export
+- `05_analisi_avanzata.py`: Heatmap, radar e confronto strutturale
+- `06_export.py`: Generazione PDF + Excel in ZIP
 
-- Python 3.9+
-- Streamlit
-- Pandas
-- Matplotlib
-- XlsxWriter
-- ReportLab
+## 📁 Requisiti
 
-Installa tutto con:
+Consulta `requirements.txt` per la lista completa.
 
-```bash
-pip install -r requirements.txt
-```
+## 🧪 Modalità demo
 
----
+La demo consente di esplorare tutte le funzionalità anche senza caricare file Excel.
 
-## ▶️ Avvio dell'app
+## 📤 Output
 
-Dalla root del progetto:
+- PDF dinamici con grafici e note
+- Report Excel con KPI, bilancio, YoY
 
-```bash
-streamlit run 00_home.py
-```
+## 📌 Autore
 
----
-
-## 📂 Struttura del progetto
-
-```
-CruscottoPMI/
-├── assets/                     # Contiene logo visibile nei PDF
-├── pages/                      # Moduli multipagina Streamlit
-│   ├── 01_kpi.py
-│   ├── 02_yoy.py
-│   ├── 03_confronto.py
-│   ├── 04_export.py
-│   └── 05_analisi_avanzata.py
-├── src/cruscotto_pmi/         # Funzioni riutilizzabili (utils.py)
-├── 00_home.py                 # Pagina iniziale (upload e demo)
-├── README.md
-└── .gitignore
-```
-
----
-
-## 📄 Esempio di report PDF
-
-Il report esportato include:
-
-- Copertina con titolo, logo e data
-- Tabelle con KPI, bilanci e variazioni YoY
-- Sezione note personalizzabili
-- Logo dell'app integrato
-
----
-
-## 👨‍💻 Autore
-
-**Andrea Bozzo**  
-[GitHub: AndreaBozzo](https://github.com/AndreaBozzo)
-
----
-
-## 📝 Licenza
-
-Questo progetto è rilasciato sotto licenza **MIT**.
-
+Realizzato da Andrea Bozzo  
+[GitHub](https://github.com/AndreaBozzo/CruscottoPMI)
