@@ -1,7 +1,7 @@
 # 📊 CruscottoPMI
 
 ## 🌐 App online
-👉 [Avvia CruscottoPMI su Streamlit Cloud](https://cruscottopmi-appv3eny73ucrbqzzkdb8ic.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/AndreaBozzo/CruscottoPMI/main/streamlit_app.py)
 
 **CruscottoPMI** è un'applicazione interattiva sviluppata con Python e Streamlit, pensata per l'analisi finanziaria di Piccole e Medie Imprese (PMI).  
 Fornisce insight chiari e visualizzazioni efficaci su bilanci, KPI, indicatori strutturali e benchmarking.
