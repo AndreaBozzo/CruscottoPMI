@@ -8,6 +8,7 @@
 Permette di caricare bilanci in formato Excel, analizzare KPI chiave, confrontare più aziende e generare report PDF professionali.
 
 [![Version](https://img.shields.io/badge/version-v0.6-blue)](https://github.com/AndreaBozzo/CruscottoPMI/releases)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cruscottopmi.streamlit.app/)
 
 ---
 
@@ -25,23 +26,81 @@ Permette di caricare bilanci in formato Excel, analizzare KPI chiave, confrontar
 ## 📦 Requisiti
 
 - Python 3.9–3.12
-- Vedi tutte le dipendenze in [`requirements.txt`](requirements.txt)
+- Tutte le dipendenze sono elencate in [`requirements.txt`](requirements.txt)
 
-Installa tutto in locale con:
+Installa in locale con:
 
 ```bash
 pip install -r requirements.txt
+```
 
-## 🧪 Modalità demo
+---
 
-La demo consente di esplorare tutte le funzionalità anche senza caricare file Excel.
+## ▶️ Come eseguire l'app
 
-## 📤 Output
+```bash
+streamlit run 00_home.py
+```
 
-- PDF dinamici con grafici e note
-- Report Excel con KPI, bilancio, YoY
+Oppure apri `00_home.py` da un IDE (es. VSCode) e avvia Streamlit.
 
-## 📌 Autore
+---
 
-Realizzato da Andrea Bozzo  
-[GitHub](https://github.com/AndreaBozzo/CruscottoPMI)
+## 🧪 Modalità Demo
+
+La modalità demo è accessibile dalla Home senza caricare file.  
+Include bilanci di esempio (`DemoCorp`, `BetaSpA`) e benchmark.
+
+---
+
+## 🖨️ Export PDF
+
+Genera report professionali con:
+- Copertina con logo
+- Sezioni selezionabili (Radar, Heatmap, KPI, YoY, ecc.)
+- Grafici integrati
+
+---
+
+## 📂 Struttura del progetto
+
+```
+CruscottoPMI/
+│
+├── pages/
+│   ├── 00_home.py
+│   ├── 01_scheda_azienda.py
+│   ├── 02_dashboard_confronto.py
+│   └── ...
+│
+├── cruscotto_pmi/
+│   ├── utils.py
+│   ├── charts.py
+│   └── pdf_generator.py
+│
+├── assets/
+│   └── logo.png
+│
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 📄 Licenza
+
+Progetto open source rilasciato con licenza MIT.
+
+---
+
+## 🙋‍♂️ Autore
+
+Realizzato da [Andrea Bozzo](https://github.com/AndreaBozzo)
+
+---
+
+## 🔜 Roadmap
+
+- [x] v0.6 – Export PDF con grafici integrati
+- [ ] v0.7 – Restyling UI/UX e tema grafico custom
+- [ ] v1.0 – Simulazioni finanziarie avanzate e deploy pubblico
