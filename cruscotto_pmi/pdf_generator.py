@@ -1,131 +1,120 @@
-
-from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak, Spacer, Image as PlatypusImage
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_RIGHT, TA_LEFT
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
-from reportlab.lib import colors
+import os
 from io import BytesIO
 from datetime import datetime
 
-def genera_super_pdf(df_kpi, df_voci, df_yoy, note,
-                     grafico_kpi_buf=None, titolo_grafico=None,
-                     grafico_extra_buf=None, titolo_extra=None):
+import pandas as pd
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import cm
+from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer,
+                                PageBreak, Image as PlatypusImage,
+                                Table, TableStyle, Frame, PageTemplate)
+
+def genera_super_pdf(
+    azienda,
+    anno,
+    df_kpi=None,
+    df_voci=None,
+    df_yoy=None,
+    nota=None,
+    radar_img=None,
+    gauge_img=None,
+    heatmap_img=None,
+    trend_img=None,
+    logo_path="logo.png"
+):
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=2*cm, leftMargin=2*cm, topMargin=2.5*cm, bottomMargin=2*cm)
-    elements = []
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name="Right", alignment=TA_RIGHT))
-    styles.add(ParagraphStyle(name="Left", alignment=TA_LEFT))
-    styles.add(ParagraphStyle(name="HeaderBlock", fontSize=14, leading=18, alignment=TA_LEFT, spaceAfter=12))
-    styles.add(ParagraphStyle(name="Mono", fontName="Helvetica", fontSize=10, leading=14, alignment=TA_LEFT))
 
-    elements.append(Paragraph("🧭 <b>CruscottoPMI</b><br/>Report Finanziario Aziendale", styles["HeaderBlock"]))
-    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    elements.append(Paragraph(f"<i>Generato il {now}</i>", styles['Normal']))
-    elements.append(Spacer(1, 0.5 * cm))
+    # callback per numeri di pagina e footer su tutte le pagine
+    def _footer(canvas, doc):
+        canvas.saveState()
+        # numero di pagina
+        page_num = f"Pagina {doc.page}"
+        canvas.setFont("Helvetica", 8)
+        canvas.drawCentredString(A4[0] / 2, 1 * cm, page_num)
+        # data di generazione
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
+        footer_text = f"Generato il {now}"
+        canvas.drawRightString(A4[0] - 1 * cm, 1 * cm, footer_text)
+        canvas.restoreState()
 
-    if note:
-        elements.append(Paragraph("<b>📝 Note Personali</b>", styles['Heading2']))
-        for line in note.splitlines():
-            elements.append(Paragraph(line, styles['Normal']))
-        elements.append(Spacer(1, 0.3 * cm))
+    # costruzione document
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                            rightMargin=2*cm, leftMargin=2*cm,
+                            topMargin=2*cm, bottomMargin=2*cm)
 
-    def add_image_section(img_buf, title):
-        elements.append(PageBreak())
-        elements.append(Paragraph(f"{title}", styles['Heading2']))
-        img = PlatypusImage(img_buf, width=16*cm)
-        img.hAlign = "CENTER"
-        elements.append(Spacer(1, 0.2 * cm))
+    doc.addPageTemplates([PageTemplate(id='All', frames=[Frame(doc.leftMargin, doc.bottomMargin,
+                                                                doc.width, doc.height)],
+                                       onPage=_footer)])
+    elements = []
+
+    logo_file = logo_path
+    if not os.path.exists(logo_file):
+        alt = os.path.join("assets", os.path.basename(logo_path))
+        if os.path.exists(alt):
+            logo_file = alt
+
+    # Se il file esiste, lo inserisci
+    if os.path.exists(logo_file):
+        img = PlatypusImage(logo_file, width=6*cm, height=6*cm)
         elements.append(img)
-        elements.append(Spacer(1, 0.5 * cm))
+        elements.append(Spacer(1, 12))
 
-    if grafico_kpi_buf:
-        grafico_title = titolo_grafico if titolo_grafico else "📊 Grafico KPI"
-        add_image_section(grafico_kpi_buf, grafico_title)
+    # Titolo e sottotitolo
+    title = Paragraph(f"<b>Report Analitico Azienda</b>", styles["Title"])
+    elements.append(title)
+    subtitle = Paragraph(f"<b>{azienda} – {anno}</b>", styles["Heading2"])
+    elements.append(subtitle)
+    gen_date = datetime.now().strftime("%d %B %Y, %H:%M")
+    elements.append(Paragraph(f"Data generazione: {gen_date}", styles["Normal"]))
+    elements.append(PageBreak())
 
-    if grafico_extra_buf:
-        extra_title = titolo_extra if titolo_extra else "📊 Grafico Extra"
-        add_image_section(grafico_extra_buf, extra_title)
-
-    def add_vertical_block(title, df):
-        if df.empty:
-            return
-
-        # Filtro KPI: solo sintetici se siamo nella sezione KPI
-        if title == "📊 KPI":
-            keep_cols = ["ROE", "EBITDA Margin", "ROI", "Current Ratio", "Variazione %", "Azienda", "Anno"]
-            df = df[[col for col in keep_cols if col in df.columns]]
-
-        elements.append(PageBreak())
-        elements.append(Paragraph(f"<b>{title}</b>", styles['Heading2']))
-        elements.append(Spacer(1, 0.2 * cm))
-        for idx, row in df.iterrows():
-            row_label = ""
-            if "Azienda" in df.columns and "Anno" in df.columns:
-                row_label = f" ({row['Azienda']} - {row['Anno']})"
-            for col in df.columns:
-                if col in ["Azienda", "Anno"]:
-                    continue
-                val = row[col]
-                if isinstance(val, (int, float)):
-                    val_str = f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-                    if col in ["ROE", "EBITDA Margin", "ROI", "Current Ratio"]:
-                        try:
-                            if float(val) < 0 or (col == "Current Ratio" and float(val) < 1):
-                                val_str = f"<font color='red'>{val_str}</font>"
-                        except:
-                            pass
-                    if col == "Variazione %":
-                        try:
-                            if float(val) > 0:
-                                val_str = f"<font color='green'>{val_str}</font>"
-                            elif float(val) < 0:
-                                val_str = f"<font color='red'>{val_str}</font>"
-                        except:
-                            pass
-                else:
-                    val_str = str(val)
-                full_label = f"<b>{col}{row_label}:</b> {val_str}"
-                elements.append(Paragraph(full_label, styles["Mono"]))
-                elements.append(Spacer(1, 0.1 * cm))
-
-    add_vertical_block("📊 KPI", df_kpi)
-    add_vertical_block("📑 Voci di Bilancio", df_voci)
-    add_vertical_block("🔁 Analisi YoY", df_yoy)
-
-    doc.build(elements)
-    buffer.seek(0)
-    return buffer
-
-from fpdf import FPDF
-
-def genera_pdf_yoy(buffer, df_yoy, azienda, anno1, anno2, nota=""):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, f"Report YoY – {azienda}", ln=True)
-
-    pdf.set_font("Arial", "", 12)
-    pdf.cell(0, 10, f"Confronto tra {anno1} e {anno2}", ln=True)
-
-    pdf.ln(5)
+    # === Nota introduttiva ===
     if nota:
-        pdf.set_font("Arial", "I", 11)
-        pdf.multi_cell(0, 8, f"Nota: {nota}")
-        pdf.ln(2)
+        elements.append(Paragraph("📝 Nota introduttiva", styles["Heading2"]))
+        elements.append(Paragraph(nota, styles["BodyText"]))
+        elements.append(Spacer(1, 12))
 
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(100, 8, "Voce", border=1)
-    pdf.cell(40, 8, "Variazione (%)", border=1, ln=True)
+    # === Sezioni con grafici ===
+    def _append_img(section_title, img_list):
+        if img_list:
+            elements.append(Paragraph(section_title, styles["Heading2"]))
+            for name, data in img_list:
+                bio = BytesIO(data)
+                img = PlatypusImage(bio, width=16*cm, height=9*cm)
+                elements.append(img)
+                elements.append(Spacer(1, 12))
 
-    pdf.set_font("Arial", "", 11)
-    for _, row in df_yoy.iterrows():
-        voce = str(row["Voce"])
-        var = f"{row['Variazione (%)']:+.2f}%"
-        pdf.cell(100, 8, voce[:40], border=1)
-        pdf.cell(40, 8, var, border=1, ln=True)
+    _append_img("🎯 Radar KPI", radar_img or [])
+    _append_img("⏱️ Indicatori Strutturali", gauge_img or [])
+    _append_img("🌡️ Heatmap Voci di Bilancio", heatmap_img or [])
+    _append_img("📈 Trend KPI", trend_img or [])
 
-    pdf.output(buffer)
+    # === Tabelle KPI, Voci, YoY ===
+    def _append_table(df, title, max_rows=40, fontsize=8):
+        if df is not None and not df.empty:
+            elements.append(Paragraph(title, styles["Heading2"]))
+            data = [list(df.columns)] + df.values.tolist()
+            # limitiamo righe
+            data = data[: max_rows + 1]
+            table = Table(data, hAlign="LEFT")
+            table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#DDDDDD")),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#999999")),
+                ("FONTSIZE", (0, 0), (-1, -1), fontsize),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ]))
+            elements.append(table)
+            elements.append(PageBreak())
+
+    _append_table(df_kpi, "📊 KPI", max_rows=20, fontsize=8)
+    _append_table(df_voci, "📁 Voci di Bilancio", max_rows=20, fontsize=7)
+    _append_table(df_yoy, "📉 Analisi YoY", max_rows=20, fontsize=7)
+
+    # === Build finale ===
+    doc.build(elements)
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+    return pdf_bytes

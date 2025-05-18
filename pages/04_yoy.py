@@ -1,98 +1,107 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from io import BytesIO
-from zipfile import ZipFile
-from cruscotto_pmi.pdf_generator import genera_pdf_yoy
-from cruscotto_pmi.utils import genera_df_yoy
 
 st.set_page_config(layout="wide", page_title="Analisi YoY")
-st.title("📈 Analisi Variazioni Percentuali YoY")
-st.markdown("Confronta due anni consecutivi per un'azienda e analizza l'evoluzione delle principali voci economico-finanziarie.")
+st.title("📉 Analisi Variazioni Percentuali YoY")
+st.markdown("Confronta le variazioni % anno su anno per ogni voce contabile selezionata.")
 
-# === Caricamento dati
+# === Recupero dati da sessione
 df_kpi = st.session_state.get("df_kpi", pd.DataFrame())
 df_voci = st.session_state.get("df_voci", pd.DataFrame())
 
-if df_kpi.empty or df_voci.empty:
-    st.warning("⚠️ Nessun dato disponibile per l'analisi YoY.")
+# === Fallback se df_voci mancante
+if df_voci.empty and "bilanci" in st.session_state:
+    bilanci = st.session_state["bilanci"]
+    df_voci = pd.concat(
+        [dati["completo"] for dati in bilanci.values() if isinstance(dati, dict) and "completo" in dati],
+        ignore_index=True
+    )
+    st.session_state["df_voci"] = df_voci
+
+if df_voci.empty:
+    st.warning("⚠️ Nessun dato disponibile per analisi YoY.")
     st.stop()
 
-# === Selezione Azienda e Anni
-aziende = sorted(df_kpi["Azienda"].unique())
-azienda_sel = st.selectbox("🏢 Seleziona azienda", aziende)
-anni_disp = sorted(df_kpi[df_kpi["Azienda"] == azienda_sel]["Anno"].astype(str).unique())
-
-if len(anni_disp) < 2:
-    st.warning("⚠️ Sono necessari almeno due anni per confrontare le variazioni YoY.")
+# === Selezione azienda e soglie
+aziende = sorted(df_voci["Azienda"].unique())
+azienda_sel = st.selectbox("🏢 Azienda", aziende)
+anni_dispo = sorted(df_voci[df_voci["Azienda"] == azienda_sel]["Anno"].unique())
+if len(anni_dispo) < 2:
+    st.warning("⚠️ Servono almeno due anni per confrontare le variazioni.")
     st.stop()
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns([2, 1, 1])
 with col1:
-    anno1 = st.selectbox("📅 Anno base", anni_disp[:-1])
+    anni_sel = st.multiselect("📅 Anni da confrontare", anni_dispo, default=anni_dispo[-2:])
 with col2:
-    anno2 = st.selectbox("📅 Anno di confronto", anni_disp[1:])
+    soglia = st.number_input("🎯 Soglia variazione (%)", value=5.0, min_value=0.0, max_value=100.0, step=0.5)
+with col3:
+    max_voci = st.slider("🔝 Top N voci", min_value=3, max_value=20, value=10)
 
-if anno1 == anno2:
-    st.warning("⚠️ Seleziona due anni differenti per visualizzare la variazione.")
+if len(anni_sel) < 2:
+    st.warning("⚠️ Seleziona almeno due anni per il confronto.")
     st.stop()
 
-# === Generazione df_yoy
-df_yoy = genera_df_yoy(df_kpi, df_voci, azienda_sel, anno1, anno2)
+# === Calcolo YoY %
+df = df_voci[df_voci["Azienda"] == azienda_sel]
+df = df[df["Anno"].isin(anni_sel)]
+
+# Raggruppa per Anno + Voce
+pivot = df.pivot_table(index="Voce", columns="Anno", values="Importo (€)", aggfunc="sum")
+pivot = pivot.sort_index(axis=1)  # ordina gli anni
+
+# Calcolo variazione % tra anni consecutivi
+df_yoy = pd.DataFrame()
+for i in range(1, len(pivot.columns)):
+    anno_prev = pivot.columns[i - 1]
+    anno_curr = pivot.columns[i]
+    delta = (pivot[anno_curr] - pivot[anno_prev]) / pivot[anno_prev] * 100
+    delta = delta.replace([float("inf"), -float("inf")], pd.NA).dropna()
+    temp = pd.DataFrame({
+        "Voce": delta.index,
+        "Anno Iniziale": anno_prev,
+        "Anno Finale": anno_curr,
+        "Variazione %": delta.values
+    })
+    df_yoy = pd.concat([df_yoy, temp], ignore_index=True)
+
+# Filtra per soglia e top N
+df_yoy["Assoluto"] = df_yoy["Variazione %"].abs()
+df_yoy = df_yoy[df_yoy["Assoluto"] >= soglia]
+df_yoy = df_yoy.sort_values("Assoluto", ascending=False).head(max_voci)
+
 if df_yoy.empty:
-    st.warning("⚠️ Nessuna variazione calcolabile per gli anni selezionati.")
+    st.info("ℹ️ Nessuna variazione significativa trovata con la soglia impostata.")
     st.stop()
 
-st.session_state["df_yoy"] = df_yoy
+# === Tabella
+st.dataframe(df_yoy.drop(columns="Assoluto"), use_container_width=True)
 
-# === Info dinamica riepilogativa
-st.markdown(f"🔍 Confronto per <b>{azienda_sel}</b> tra <b>{anno1}</b> e <b>{anno2}</b>", unsafe_allow_html=True)
-st.divider()
-
-# === Visualizzazione Tabella
-with st.container():
-    st.subheader("📋 Tabella variazioni %")
-    # Fix fondamentale: assicuriamoci che la colonna sia numerica
-    df_yoy["Variazione (%)"] = pd.to_numeric(df_yoy["Variazione (%)"], errors="coerce")
-    st.dataframe(df_yoy.style.format({"Variazione (%)": "{:+.2f}%"}), use_container_width=True)
-    st.divider()
-
-# === Grafico variazioni YoY
+# === Grafico
 fig = px.bar(
     df_yoy,
     x="Voce",
-    y="Variazione (%)",
-    color="Variazione (%)",
-    color_continuous_scale="RdYlGn",
-    title="📊 Variazioni percentuali YoY",
-    height=500
+    y="Variazione %",
+    color="Anno Finale",
+    barmode="group",
+    text_auto=".1f",
+    height=500,
+    title=f"📊 Variazioni % – {azienda_sel}"
 )
 fig.update_layout(
-    margin=dict(l=40, r=40, t=60, b=40),
-    coloraxis_colorbar=dict(title="%"),
-    xaxis_tickangle=-45
+    yaxis_title="Variazione % YoY",
+    xaxis_title="Voce",
+    margin=dict(t=60, l=40, r=40, b=40)
 )
 
+# Linea benchmark se desiderata
+if soglia > 0:
+    fig.add_shape(type="line", x0=-0.5, x1=len(df_yoy["Voce"].unique())-0.5,
+                  y0=soglia, y1=soglia, line=dict(dash="dot", color="green"))
+    fig.add_shape(type="line", x0=-0.5, x1=len(df_yoy["Voce"].unique())-0.5,
+                  y0=-soglia, y1=-soglia, line=dict(dash="dot", color="red"))
+    fig.add_annotation(x=0, y=soglia, text="Soglia +", showarrow=False, yshift=10, font=dict(size=10))
+    fig.add_annotation(x=0, y=-soglia, text="Soglia –", showarrow=False, yshift=-10, font=dict(size=10))
+
 st.plotly_chart(fig, use_container_width=True, key="grafico_yoy")
-st.divider()
-
-# === Esportazione risultati
-with st.expander("📤 Esporta risultati YoY"):
-    nota = st.text_area("✏️ Inserisci una nota per il report", placeholder="Osservazioni, considerazioni, risultati salienti...")
-
-    if st.button("📄 Esporta in ZIP"):
-        buffer = BytesIO()
-        with ZipFile(buffer, "w") as zip_file:
-            excel_buffer = BytesIO()
-            df_yoy.to_excel(excel_buffer, index=False)
-            excel_buffer.seek(0)
-            zip_file.writestr("analisi_yoy.xlsx", excel_buffer.read())
-
-            pdf_buffer = BytesIO()
-            genera_pdf_yoy(pdf_buffer, df_yoy, azienda_sel, anno1, anno2, nota)
-            pdf_buffer.seek(0)
-            zip_file.writestr("report_yoy.pdf", pdf_buffer.read())
-
-        buffer.seek(0)
-        st.download_button("📥 Scarica ZIP", buffer, file_name="report_yoy.zip")

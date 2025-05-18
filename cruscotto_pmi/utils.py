@@ -50,3 +50,26 @@ def genera_df_yoy(df_kpi, df_voci, azienda, anno1, anno2):
     df_yoy = df_yoy.sort_values("Variazione (%)", ascending=False).reset_index(drop=True)
 
     return df_yoy
+
+def normalizza_kpi(df):
+    """
+    Converte un DataFrame KPI da formato lungo (con colonne 'KPI' e 'Valore')
+    a formato largo (colonne KPI), solo se rilevante.
+    """
+    if not isinstance(df, pd.DataFrame):
+        return df
+
+    cols = df.columns.tolist()
+    if all(x in cols for x in ["Azienda", "Anno", "KPI", "Valore"]):
+        try:
+            df_wide = df.pivot_table(
+                index=["Azienda", "Anno"],
+                columns="KPI",
+                values="Valore",
+                aggfunc="first"  # gestisce eventuali duplicati
+            ).reset_index()
+            return df_wide
+        except Exception as e:
+            print(f"[normalizza_kpi] Pivot fallito: {e}")
+            return df
+    return df

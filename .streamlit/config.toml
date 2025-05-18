@@ -1,15 +1,15 @@
 [theme]
-base="light"
-primaryColor="#2b6777"
-backgroundColor="#ffffff"
-secondaryBackgroundColor="#f0f2f6"
-textColor="#1f1f1f"
-font="sans serif"
+primaryColor = "#2ECC71"
+backgroundColor = "#F8F9F9"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#2C3E50"
+font = "sans serif"
 
 [server]
-headless=true
-enableCORS=false
-enableXsrfProtection=false
+headless = true
 
-[python]
-extraPaths = ["src"]
+[client]
+showSidebarNavigation = true
+
+[general]
+pageTitle = "CruscottoPMI"

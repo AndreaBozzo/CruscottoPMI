@@ -1,5 +1,5 @@
-
 import pandas as pd
+import streamlit as st
 
 def calcola_kpi(ce, att, pas, benchmark):
     try:
@@ -27,6 +27,23 @@ def calcola_kpi(ce, att, pas, benchmark):
         kpi["Equity ratio"] = round(patrimonio / tot_attivo, 2) if tot_attivo else 0
         kpi["Return on Equity"] = round(utile / patrimonio * 100, 2) if patrimonio else 0
 
+        # Indice sintetico: media dei KPI validi
+        valori_utili = [v for v in kpi.values() if isinstance(v, (int, float))]
+        if len(valori_utili) >= 3:
+            kpi["Indice Sintetico"] = round(sum(valori_utili) / len(valori_utili), 2)
+        else:
+            kpi["Indice Sintetico"] = None
+
+        # Aggiunta robusta dei metadati Azienda/Anno
+        kpi["Azienda"] = ce.attrs.get("azienda", "Sconosciuta")
+        kpi["Anno"] = ce.attrs.get("anno", "N/A")
         return kpi
+
     except Exception as e:
-        return {"Errore": str(e)}
+        st.warning(f"Errore durante il calcolo KPI: {e}")
+        return {
+            "Azienda": ce.attrs.get("azienda", "Sconosciuta"),
+            "Anno": ce.attrs.get("anno", "N/A"),
+            "Indice Sintetico": None,
+            "Errore": str(e)
+        }

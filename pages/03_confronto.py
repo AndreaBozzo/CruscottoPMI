@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -7,44 +6,75 @@ from zipfile import ZipFile
 
 st.set_page_config(layout="wide", page_title="Confronto Voci di Bilancio")
 st.title("📊 Confronto Voci di Bilancio")
-st.markdown("Confronta valori economici tra aziende, anni e voci di bilancio. Ogni selezione aggiorna dinamicamente il grafico e i dati esportabili.")
+st.markdown("Analizza l’andamento delle principali voci tra anni e aziende. Visualizza e confronta valori contabili chiave.")
 
-# === Caricamento dati
-df_voci = st.session_state.get("df_voci", pd.DataFrame())
-
-if df_voci.empty or "Voce" not in df_voci.columns:
-    st.warning("⚠️ La colonna 'Voce' non è disponibile. Assicurati che i KPI siano stati generati correttamente.")
+# === Recupera bilanci dalla sessione
+bilanci = st.session_state.get("bilanci", {})
+if not bilanci:
+    st.warning("⚠️ Nessun bilancio caricato o disponibile in modalità demo.")
     st.stop()
 
-# === Filtri di selezione
-aziende = df_voci["Azienda"].unique().tolist()
-anni = sorted(df_voci["Anno"].unique().tolist())
-voci_disponibili = sorted(df_voci["Voce"].unique())
+# === Estrai tutti i DataFrame 'completo' o fallback manuale
+df_totale = pd.concat(
+    [
+        entry["completo"]
+        if isinstance(entry, dict) and "completo" in entry
+        else pd.DataFrame()
+        for entry in bilanci.values()
+    ],
+    ignore_index=True
+)
 
-azienda_sel = st.multiselect("🏢 Aziende da confrontare", aziende, default=aziende, help="Seleziona una o più aziende")
-anno_sel = st.multiselect("📅 Anni da includere", anni, default=anni, help="Puoi confrontare anche più anni contemporaneamente")
-voci_sel = st.multiselect("📄 Voci di bilancio da visualizzare", voci_disponibili, default=voci_disponibili[:5], help="Le prime 5 voci vengono selezionate automaticamente")
+# === Validazione colonne minime
+required_cols = ["Azienda", "Anno", "Voce", "Importo (€)"]
+if df_totale.empty or not all(col in df_totale.columns for col in required_cols):
+    st.warning("⚠️ I dati non contengono le colonne necessarie per il confronto.")
+    st.stop()
 
-# === Filtro del DataFrame
+# === Filtro per tipo (CE, Attivo, Passivo, Tutti)
+tipo_sel = st.radio("📂 Tipo di bilancio", ["Conto Economico", "Attivo", "Passivo", "Tutti"], index=3, horizontal=True)
+df_voci = df_totale.copy()
+if tipo_sel != "Tutti":
+    df_voci = df_voci[df_voci["Tipo"] == tipo_sel]
+
+# === Selettori dinamici
+aziende_dispo = sorted(df_voci["Azienda"].unique())
+anni_dispo = sorted(df_voci["Anno"].unique())
+voci_dispo = sorted(df_voci["Voce"].unique())
+
+# Default: top 5 voci più pesanti su totale
+top_voci = (
+    df_voci.groupby("Voce")["Importo (€)"]
+    .sum()
+    .sort_values(ascending=False)
+    .head(5)
+    .index.tolist()
+)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    aziende_sel = st.multiselect("🏢 Aziende", aziende_dispo, default=aziende_dispo[:1])
+with col2:
+    anni_sel = st.multiselect("📅 Anni", anni_dispo, default=anni_dispo)
+with col3:
+    voci_sel = st.multiselect("📄 Voci", voci_dispo, default=top_voci)
+
+# === Sottocampionamento suggerito se troppe selezioni
+if len(voci_sel) > 8 or len(anni_sel) > 4:
+    st.info("ℹ️ Per una leggibilità ottimale, consigliato selezionare massimo 8 voci o 4 anni.")
+
+# === Filtro finale
 df_filtrato = df_voci[
-    df_voci["Azienda"].isin(azienda_sel) &
-    df_voci["Anno"].isin(anno_sel) &
-    df_voci["Voce"].isin(voci_sel)
+    (df_voci["Azienda"].isin(aziende_sel)) &
+    (df_voci["Anno"].isin(anni_sel)) &
+    (df_voci["Voce"].isin(voci_sel))
 ]
 
 if df_filtrato.empty:
     st.warning("⚠️ Nessun dato disponibile per i filtri selezionati.")
     st.stop()
 
-# === Info dinamica riepilogativa
-st.markdown(f"🔍 <b>{len(azienda_sel)}</b> aziende, <b>{len(anno_sel)}</b> anni e <b>{len(voci_sel)}</b> voci selezionate.",
-            unsafe_allow_html=True)
-
-# === Badge delle voci selezionate
-badges = " ".join([f"<span style='padding:3px 8px;background-color:#eee;border-radius:12px;margin-right:4px'>{v}</span>" for v in voci_sel])
-st.markdown(f"🧾 <b>Voci selezionate:</b><br>{badges}", unsafe_allow_html=True)
-
-# === Grafico confronto
+# === Grafico
 fig = px.bar(
     df_filtrato,
     x="Voce",
@@ -52,32 +82,29 @@ fig = px.bar(
     color="Azienda",
     barmode="group",
     facet_col="Anno",
-    title="📊 Confronto per Voce di Bilancio",
+    text_auto='.2s',
     height=500,
+    title="📊 Confronto tra Voci selezionate"
 )
-fig.update_layout(
-    xaxis_title="",
-    yaxis_title="Importo (€)",
-    margin=dict(l=40, r=40, t=80, b=40),
-    title_font=dict(size=20, family="Arial"),
-    legend_title_text="",
-)
+fig.update_layout(margin=dict(t=60, l=40, r=40, b=40))
 
-st.plotly_chart(fig, use_container_width=True, key="grafico_confronto_voci")
+st.plotly_chart(fig, use_container_width=True, key="bar_voci")
+
+# === Export ZIP (Excel + PNG)
 st.divider()
+st.subheader("📦 Esporta risultati")
+buffer = BytesIO()
+with ZipFile(buffer, "w") as zip_file:
+    # Excel
+    excel_io = BytesIO()
+    df_filtrato.to_excel(excel_io, index=False)
+    zip_file.writestr("confronto_voci.xlsx", excel_io.getvalue())
 
-# === Esportazione ZIP
-with st.expander("📤 Esporta grafico e dati selezionati"):
-    if st.button("📄 Scarica ZIP con Excel + immagine del grafico"):
-        buffer = BytesIO()
-        with ZipFile(buffer, "w") as zip_file:
-            excel_buffer = BytesIO()
-            df_filtrato.to_excel(excel_buffer, index=False)
-            excel_buffer.seek(0)
-            zip_file.writestr("confronto_voci.xlsx", excel_buffer.read())
+    # PNG del grafico
+    try:
+        fig_bytes = fig.to_image(format="png")
+        zip_file.writestr("grafico_voci.png", fig_bytes)
+    except Exception:
+        st.warning("⚠️ Impossibile esportare il grafico come immagine (Plotly image engine mancante).")
 
-            img_bytes = fig.to_image(format="png")
-            zip_file.writestr("grafico_confronto.png", img_bytes)
-
-        buffer.seek(0)
-        st.download_button("📥 Scarica ZIP", buffer, file_name="confronto_voci.zip")
+st.download_button("📥 Scarica confronto (ZIP)", data=buffer.getvalue(), file_name="confronto_voci.zip")
