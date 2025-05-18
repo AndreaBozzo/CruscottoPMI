@@ -1,34 +1,36 @@
+<p align="center">
+  <img src="assets/logo.png" alt="CruscottoPMI Logo" width="250"/>
+</p>
+
 # 📊 CruscottoPMI
 
-## 🌐 App online
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/AndreaBozzo/CruscottoPMI/main/streamlit_app.py)
+**CruscottoPMI** è un'applicazione interattiva costruita con Python e Streamlit per l'analisi economico-finanziaria di **Piccole e Medie Imprese** (PMI).  
+Permette di caricare bilanci in formato Excel, analizzare KPI chiave, confrontare più aziende e generare report PDF professionali.
 
-**CruscottoPMI** è un'applicazione interattiva sviluppata con Python e Streamlit, pensata per l'analisi finanziaria di Piccole e Medie Imprese (PMI).  
-Fornisce insight chiari e visualizzazioni efficaci su bilanci, KPI, indicatori strutturali e benchmarking.
+[![Version](https://img.shields.io/badge/version-v0.6-blue)](https://github.com/AndreaBozzo/CruscottoPMI/releases)
+
+---
 
 ## 🚀 Funzionalità principali
 
-- Caricamento multiplo di bilanci in formato Excel
-- Analisi KPI e indicatori finanziari
-- Benchmark personalizzabile o in modalità demo
-- Variazioni YoY e confronto multi-anno o multi-azienda
-- Heatmap, radar, gauge e dashboard interattive
-- Esportazione in PDF + Excel (singola azienda/anno)
-- Modalità demo per utilizzo senza caricamenti
+- 📥 **Caricamento Excel** con mappatura intelligente dei fogli
+- 📊 **Dashboard KPI** con selezione dinamica azienda/anno
+- 📈 **Analisi YoY** delle variazioni % su bilanci pluriennali
+- 🧠 **Visualizzazioni avanzate**: Heatmap, Radar, Gauge
+- 🧪 **Modalità Demo** per uso immediato anche senza file
+- 📝 **Export PDF personalizzabile** con note, grafici e KPI
 
-## 🗂 Struttura multipagina
+---
 
-- `00_home.py`: Home page con caricamento dati o demo
-- `01_scheda_azienda.py`: Riepilogo anagrafico e visivo del bilancio
-- `02_kpi.py`: KPI dinamici, radar e gauge
-- `03_confronto.py`: Analisi comparativa voci/aziende
-- `04_yoy.py`: Variazioni YoY con opzione export
-- `05_analisi_avanzata.py`: Heatmap, radar e confronto strutturale
-- `06_export.py`: Generazione PDF + Excel in ZIP
+## 📦 Requisiti
 
-## 📁 Requisiti
+- Python 3.9–3.12
+- Vedi tutte le dipendenze in [`requirements.txt`](requirements.txt)
 
-Consulta `requirements.txt` per la lista completa.
+Installa tutto in locale con:
+
+```bash
+pip install -r requirements.txt
 
 ## 🧪 Modalità demo
 
