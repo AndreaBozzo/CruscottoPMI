@@ -4,7 +4,7 @@
 **CruscottoPMI** è un'applicazione interattiva costruita con Python e Streamlit per l'analisi economico-finanziaria di **Piccole e Medie Imprese** (PMI).  
 Permette di caricare bilanci in formato Excel, analizzare KPI chiave, confrontare più aziende e generare report PDF professionali.
 
-[![Version](https://img.shields.io/badge/version-v0.6-blue)](https://github.com/AndreaBozzo/CruscottoPMI/releases)
+[![Version](https://img.shields.io/badge/version-v0.7-blue)](https://github.com/AndreaBozzo/CruscottoPMI/releases)
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cruscottopmi.streamlit.app/)
 
 > 🎯 **Clicca sul badge "Open in Streamlit" qui sopra per aprire subito la demo online.**  
