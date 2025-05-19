@@ -1,10 +1,16 @@
-# 📊 CruscottoPMI – Cruscotto Finanziario per le PMI
 
-## 🌐 App online
-[![Apri in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cruscottopmi.streamlit.app/)
+# 📊 CruscottoPMI
 
-**CruscottoPMI** è un'app interattiva sviluppata in Python e Streamlit per analizzare i bilanci di Piccole e Medie Imprese (PMI).  
-Consente di caricare file Excel reali, calcolare KPI, visualizzare indicatori finanziari e generare report PDF personalizzati.
+**CruscottoPMI** è un'applicazione interattiva costruita con Python e Streamlit per l'analisi economico-finanziaria di **Piccole e Medie Imprese** (PMI).  
+Permette di caricare bilanci in formato Excel, analizzare KPI chiave, confrontare più aziende e generare report PDF professionali.
+
+[![Version](https://img.shields.io/badge/version-v0.6-blue)](https://github.com/AndreaBozzo/CruscottoPMI/releases)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cruscottopmi.streamlit.app/)
+
+> 🎯 **Clicca sul badge "Open in Streamlit" qui sopra per aprire subito la demo online.**  
+> Non serve installare nulla: puoi provare il Cruscotto direttamente dal browser.
+
+---
 
 ---
 
@@ -32,13 +38,14 @@ Consente di caricare file Excel reali, calcolare KPI, visualizzare indicatori fi
 
 ---
 
-## 📁 Requisiti
+- Python 3.9–3.12
+- Tutte le dipendenze sono elencate in [`requirements.txt`](requirements.txt)
 
 Consulta [`requirements.txt`](requirements.txt) per la lista aggiornata delle dipendenze.
 
 ---
 
-## 📤 Output
+## ▶️ Come eseguire l'app
 
 - PDF dinamici con logo, grafici (radar, gauge, heatmap) e commenti KPI
 - Excel report per KPI, bilancio e variazioni YoY
@@ -52,7 +59,7 @@ La modalità demo consente di esplorare tutte le funzionalità con dati fittizi 
 
 ---
 
-## 📌 Autore
+Oppure apri `00_home.py` da un IDE (es. VSCode) e avvia Streamlit.
 
 Realizzato da **Andrea Bozzo**  
 📁 [GitHub Repository](https://github.com/AndreaBozzo/CruscottoPMI)  
