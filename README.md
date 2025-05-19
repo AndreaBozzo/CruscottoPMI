@@ -1,45 +1,65 @@
-# 📊 CruscottoPMI
+# 📊 CruscottoPMI – Cruscotto Finanziario per le PMI
 
 ## 🌐 App online
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/AndreaBozzo/CruscottoPMI/main/streamlit_app.py)
+[![Apri in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://cruscottopmi.streamlit.app/)
 
-**CruscottoPMI** è un'applicazione interattiva sviluppata con Python e Streamlit, pensata per l'analisi finanziaria di Piccole e Medie Imprese (PMI).  
-Fornisce insight chiari e visualizzazioni efficaci su bilanci, KPI, indicatori strutturali e benchmarking.
+**CruscottoPMI** è un'app interattiva sviluppata in Python e Streamlit per analizzare i bilanci di Piccole e Medie Imprese (PMI).  
+Consente di caricare file Excel reali, calcolare KPI, visualizzare indicatori finanziari e generare report PDF personalizzati.
 
-## 🚀 Funzionalità principali
+---
 
-- Caricamento multiplo di bilanci in formato Excel
-- Analisi KPI e indicatori finanziari
-- Benchmark personalizzabile o in modalità demo
-- Variazioni YoY e confronto multi-anno o multi-azienda
-- Heatmap, radar, gauge e dashboard interattive
-- Esportazione in PDF + Excel (singola azienda/anno)
-- Modalità demo per utilizzo senza caricamenti
+## 🚀 Funzionalità v0.7
 
-## 🗂 Struttura multipagina
+- ✅ Caricamento intelligente file Excel (riconosce nomi fogli e colonne anche non standard)
+- 🧠 KPI con badge dinamici, benchmarking e commenti automatici
+- 📉 Analisi YoY e confronto multi-anno / multi-azienda
+- 📊 Heatmap, radar, gauge, e dashboard interattive
+- 📤 Esportazione PDF + Excel con grafici e sintesi
+- 🧪 Modalità Demo completa per esplorare l’app
+- ⚙️ Architettura modulare e scalabile
 
-- `00_home.py`: Home page con caricamento dati o demo
-- `01_scheda_azienda.py`: Riepilogo anagrafico e visivo del bilancio
-- `02_kpi.py`: KPI dinamici, radar e gauge
-- `03_confronto.py`: Analisi comparativa voci/aziende
-- `04_yoy.py`: Variazioni YoY con opzione export
-- `05_analisi_avanzata.py`: Heatmap, radar e confronto strutturale
-- `06_export.py`: Generazione PDF + Excel in ZIP
+---
+
+## 🗂 Struttura Multipagina (v0.7)
+
+- `00_home.py`: Home page, caricamento file o attivazione demo
+- `01_scheda_azienda.py`: Riepilogo visivo bilancio + KPI core
+- `02_dashboard_confronto.py`: KPI comparativi multi-azienda
+- `03_confronto_voci.py`: Confronto dettagliato voci CE/SP
+- `04_analisi_yoy.py`: Analisi variazioni % YoY
+- `05_analisi_avanzata.py`: Heatmap, radar, KPI sintetici
+- `06_export.py`: Generazione report PDF/Excel personalizzati
+
+---
 
 ## 📁 Requisiti
 
-Consulta `requirements.txt` per la lista completa.
+Consulta [`requirements.txt`](requirements.txt) per la lista aggiornata delle dipendenze.
 
-## 🧪 Modalità demo
-
-La demo consente di esplorare tutte le funzionalità anche senza caricare file Excel.
+---
 
 ## 📤 Output
 
-- PDF dinamici con grafici e note
-- Report Excel con KPI, bilancio, YoY
+- PDF dinamici con logo, grafici (radar, gauge, heatmap) e commenti KPI
+- Excel report per KPI, bilancio e variazioni YoY
+- ZIP esportabile contenente tutti i file generati
+
+---
+
+## 🧪 Modalità Demo
+
+La modalità demo consente di esplorare tutte le funzionalità con dati fittizi (DemoCorp & SampleSpa).
+
+---
 
 ## 📌 Autore
 
-Realizzato da Andrea Bozzo  
-[GitHub](https://github.com/AndreaBozzo/CruscottoPMI)
+Realizzato da **Andrea Bozzo**  
+📁 [GitHub Repository](https://github.com/AndreaBozzo/CruscottoPMI)  
+🌐 [App Online](https://cruscottopmi.streamlit.app/)
+
+---
+
+## 🏷 Versione
+
+**v0.7 – 19 maggio 2025**

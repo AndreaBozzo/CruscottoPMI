@@ -1,10 +1,14 @@
 import streamlit as st
+st.set_page_config(layout="wide", page_title="Confronto Voci di Bilancio")
 import pandas as pd
 import plotly.express as px
 from io import BytesIO
 from zipfile import ZipFile
+from cruscotto_pmi.theme_loader import applica_stile_personalizzato, mostra_logo_sidebar
+applica_stile_personalizzato()
+mostra_logo_sidebar()
 
-st.set_page_config(layout="wide", page_title="Confronto Voci di Bilancio")
+
 st.title("📊 Confronto Voci di Bilancio")
 st.markdown("Analizza l’andamento delle principali voci tra anni e aziende. Visualizza e confronta valori contabili chiave.")
 
@@ -51,17 +55,32 @@ top_voci = (
     .index.tolist()
 )
 
-col1, col2, col3 = st.columns(3)
+st.subheader("📌 Selezione Aziende, Anni e Voci")
+
+col1, col2 = st.columns([2, 3])
 with col1:
     aziende_sel = st.multiselect("🏢 Aziende", aziende_dispo, default=aziende_dispo[:1])
+
 with col2:
     anni_sel = st.multiselect("📅 Anni", anni_dispo, default=anni_dispo)
-with col3:
-    voci_sel = st.multiselect("📄 Voci", voci_dispo, default=top_voci)
 
-# === Sottocampionamento suggerito se troppe selezioni
+if not aziende_sel or not anni_sel:
+    st.warning("⚠️ Seleziona almeno un'azienda e un anno.")
+    st.stop()
+
+# Selettore voci sotto
+voci_sel = st.multiselect("📄 Voci da confrontare", voci_dispo, default=top_voci)
+
+if not voci_sel:
+    st.warning("⚠️ Seleziona almeno una voce.")
+    st.stop()
+
+# Suggerimento se troppe selezioni
 if len(voci_sel) > 8 or len(anni_sel) > 4:
     st.info("ℹ️ Per una leggibilità ottimale, consigliato selezionare massimo 8 voci o 4 anni.")
+
+st.divider()
+
 
 # === Filtro finale
 df_filtrato = df_voci[
@@ -70,11 +89,15 @@ df_filtrato = df_voci[
     (df_voci["Voce"].isin(voci_sel))
 ]
 
+
 if df_filtrato.empty:
     st.warning("⚠️ Nessun dato disponibile per i filtri selezionati.")
     st.stop()
 
+st.divider()
+
 # === Grafico
+st.subheader("📊 Confronto tra Voci selezionate")
 fig = px.bar(
     df_filtrato,
     x="Voce",
@@ -84,7 +107,6 @@ fig = px.bar(
     facet_col="Anno",
     text_auto='.2s',
     height=500,
-    title="📊 Confronto tra Voci selezionate"
 )
 fig.update_layout(margin=dict(t=60, l=40, r=40, b=40))
 

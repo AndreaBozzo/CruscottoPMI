@@ -1,12 +1,15 @@
 
 import streamlit as st
-import pandas as pd
-from cruscotto_pmi.charts import genera_radar_kpi, grafico_gauge_indice, genera_heatmap_aziende
-from cruscotto_pmi.pdf_generator import genera_super_pdf
-from cruscotto_pmi.utils import normalizza_kpi
-
-
 st.set_page_config(layout="wide", page_title="Analisi Avanzata")
+import pandas as pd
+from cruscotto_pmi.charts import genera_radar_kpi, grafico_gauge_indice, genera_heatmap_aziende, kpi_card
+from cruscotto_pmi.pdf_generator import genera_super_pdf
+from cruscotto_pmi.utils import normalizza_kpi, commento_kpi
+from cruscotto_pmi.theme_loader import applica_stile_personalizzato, mostra_logo_sidebar
+applica_stile_personalizzato()
+mostra_logo_sidebar()
+
+
 st.title("🔍 Analisi Avanzata Aziendale")
 
 # === Recupero dati da sessione
@@ -55,6 +58,39 @@ if df_kpi_sel.empty:
 st.markdown(f"### 🧾 Analisi per <b>{azienda}</b> – <b>{anno}</b>", unsafe_allow_html=True)
 st.divider()
 
+st.subheader("📌 KPI Sintetici")
+
+kpi_base = [
+    "ROE", "ROI", "EBITDA Margin", "Indice Sintetico"
+]
+df_kpi_long = st.session_state.get("df_kpi", pd.DataFrame())
+df_sint = df_kpi_long[
+    (df_kpi_long["Azienda"] == azienda) &
+    (df_kpi_long["Anno"] == anno) &
+    (df_kpi_long["KPI"].isin(kpi_base))
+]
+
+if not df_sint.empty:
+    valori = df_sint.set_index("KPI")["Valore"].to_dict()
+    benchmark_valori = {k: benchmark.get(k) for k in kpi_base}
+
+    col1, col2, col3 = st.columns(3)
+    colonne = [col1, col2, col3]
+
+    for i, kpi in enumerate(kpi_base):
+        valore = valori.get(kpi)
+        if valore is not None:
+            col = colonne[i % 3]
+            with col:
+                st.markdown(kpi_card(
+                    titolo=kpi,
+                    valore=valore,
+                    benchmark=benchmark_valori.get(kpi),
+                    inverti_colori=False
+                ), unsafe_allow_html=True)
+else:
+    st.info("📭 Nessun KPI sintetico disponibile.")
+
 # === Radar KPI
 with st.container():
     st.subheader("🎯 Radar KPI Avanzati")
@@ -63,7 +99,37 @@ with st.container():
         st.plotly_chart(radar, use_container_width=True, key="radar_kpi_avz")
     else:
         st.info("Radar non disponibile.")
+
+# === Osservazioni sintetiche sui KPI
+    st.markdown("### 💬 Osservazioni automatiche")
+
+    df_kpi_long = st.session_state.get("df_kpi", pd.DataFrame())
+
+    valutazioni = []
+    for row in df_kpi_long.itertuples():
+        if row.Azienda == azienda and row.Anno == anno:
+            kpi = row.KPI
+            valore = row.Valore
+            soglia = benchmark.get(kpi)
+            if soglia is not None:
+                gap = valore - soglia
+                valutazioni.append((kpi, gap, valore, soglia))
+
+    top_kpi = sorted(valutazioni, key=lambda x: x[1], reverse=True)[:3]
+    flop_kpi = sorted(valutazioni, key=lambda x: x[1])[:3]
+
+    if top_kpi:
+        st.success("🔝 KPI sopra la soglia")
+        for kpi, _, valore, soglia in top_kpi:
+            st.markdown(f"- {commento_kpi(kpi, valore, soglia)}")
+
+    if flop_kpi:
+        st.warning("⚠️ KPI sotto la soglia")
+        for kpi, _, valore, soglia in flop_kpi:
+            st.markdown(f"- {commento_kpi(kpi, valore, soglia)}")
+
     st.divider()
+
 
  # === Gauge KPI strutturali ===
 st.divider()
@@ -111,7 +177,8 @@ else:
     st.info("Heatmap non disponibile.")
 
 
-# === Export PDF con nota
+# === Export PDF con notast.subheader("📄 Report di Sintesi PDF")
+st.subheader("📄 Report di Sintesi PDF")
 with st.expander("📤 Esporta Analisi Avanzata in PDF"):
     nota = st.text_area("📝 Aggiungi una nota al PDF", placeholder="Commenti, valutazioni, osservazioni...")
 

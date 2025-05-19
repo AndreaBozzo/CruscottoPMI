@@ -1,8 +1,11 @@
 import streamlit as st
+st.set_page_config(layout="wide", page_title="Analisi YoY")
 import pandas as pd
 import plotly.express as px
+from cruscotto_pmi.theme_loader import applica_stile_personalizzato, mostra_logo_sidebar
+applica_stile_personalizzato()
+mostra_logo_sidebar()
 
-st.set_page_config(layout="wide", page_title="Analisi YoY")
 st.title("📉 Analisi Variazioni Percentuali YoY")
 st.markdown("Confronta le variazioni % anno su anno per ogni voce contabile selezionata.")
 
@@ -23,25 +26,30 @@ if df_voci.empty:
     st.warning("⚠️ Nessun dato disponibile per analisi YoY.")
     st.stop()
 
-# === Selezione azienda e soglie
-aziende = sorted(df_voci["Azienda"].unique())
-azienda_sel = st.selectbox("🏢 Azienda", aziende)
-anni_dispo = sorted(df_voci[df_voci["Azienda"] == azienda_sel]["Anno"].unique())
-if len(anni_dispo) < 2:
-    st.warning("⚠️ Servono almeno due anni per confrontare le variazioni.")
-    st.stop()
+st.subheader("📌 Selezione Azienda, Anni e Soglie")
 
-col1, col2, col3 = st.columns([2, 1, 1])
+aziende_disponibili = sorted(df_voci["Azienda"].unique())
+col1, col2 = st.columns([3, 2])
+
 with col1:
-    anni_sel = st.multiselect("📅 Anni da confrontare", anni_dispo, default=anni_dispo[-2:])
+    azienda_sel = st.selectbox("🏢 Azienda", aziende_disponibili)
+
 with col2:
-    soglia = st.number_input("🎯 Soglia variazione (%)", value=5.0, min_value=0.0, max_value=100.0, step=0.5)
-with col3:
-    max_voci = st.slider("🔝 Top N voci", min_value=3, max_value=20, value=10)
+    anni_disponibili = sorted(df_voci[df_voci["Azienda"] == azienda_sel]["Anno"].unique())
+    anni_sel = st.multiselect("📅 Anni da confrontare", anni_disponibili, default=anni_disponibili[-2:])
 
 if len(anni_sel) < 2:
-    st.warning("⚠️ Seleziona almeno due anni per il confronto.")
+    st.warning("⚠️ Seleziona almeno due anni per confrontare le variazioni YoY.")
     st.stop()
+
+# Parametri soglie
+col1, col2 = st.columns([1, 1])
+with col1:
+    soglia = st.number_input("🎯 Soglia variazione (%)", value=5.0, min_value=0.0, max_value=100.0, step=0.5)
+with col2:
+    max_voci = st.slider("🔝 Top N voci", min_value=3, max_value=20, value=10)
+
+st.divider()
 
 # === Calcolo YoY %
 df = df_voci[df_voci["Azienda"] == azienda_sel]
@@ -78,7 +86,10 @@ if df_yoy.empty:
 # === Tabella
 st.dataframe(df_yoy.drop(columns="Assoluto"), use_container_width=True)
 
+st.divider()
+
 # === Grafico
+st.subheader("📊 Grafico delle Variazioni Percentuali YoY")
 fig = px.bar(
     df_yoy,
     x="Voce",
@@ -87,7 +98,6 @@ fig = px.bar(
     barmode="group",
     text_auto=".1f",
     height=500,
-    title=f"📊 Variazioni % – {azienda_sel}"
 )
 fig.update_layout(
     yaxis_title="Variazione % YoY",

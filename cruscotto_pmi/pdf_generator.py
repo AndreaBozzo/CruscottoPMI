@@ -5,19 +5,22 @@ from datetime import datetime
 import pandas as pd
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
-from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer,
-                                PageBreak, Image as PlatypusImage,
-                                Table, TableStyle, Frame, PageTemplate)
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image as PlatypusImage,
+    Table, TableStyle, Frame, PageTemplate
+)
 
 def genera_super_pdf(
     azienda,
     anno,
-    df_kpi=None,
-    df_voci=None,
+    df_kpi,
+    benchmark,
     df_yoy=None,
+    df_voci=None,
     nota=None,
+    osservazioni_kpi=None,
     radar_img=None,
     gauge_img=None,
     heatmap_img=None,
@@ -27,94 +30,128 @@ def genera_super_pdf(
     buffer = BytesIO()
     styles = getSampleStyleSheet()
 
-    # callback per numeri di pagina e footer su tutte le pagine
+    # Stili custom
+    title_style = ParagraphStyle("CustomTitle", parent=styles["Title"],
+                                 fontSize=22, leading=26, alignment=1,
+                                 textColor=colors.HexColor("#2C3E50"), spaceAfter=20)
+    subtitle_style = ParagraphStyle("CustomSubtitle", parent=styles["Heading2"],
+                                    fontSize=14, alignment=1,
+                                    textColor=colors.HexColor("#34495E"), spaceAfter=10)
+    heading_style = ParagraphStyle("CustomHeading2", parent=styles["Heading2"],
+                                   fontSize=12, spaceBefore=8, spaceAfter=8,
+                                   textColor=colors.HexColor("#2980B9"))
+    body_style = ParagraphStyle("CustomBody", parent=styles["BodyText"],
+                                fontSize=10, leading=12, alignment=4,
+                                spaceAfter=8)
+
     def _footer(canvas, doc):
         canvas.saveState()
-        # numero di pagina
-        page_num = f"Pagina {doc.page}"
         canvas.setFont("Helvetica", 8)
-        canvas.drawCentredString(A4[0] / 2, 1 * cm, page_num)
-        # data di generazione
-        now = datetime.now().strftime("%d/%m/%Y %H:%M")
-        footer_text = f"Generato il {now}"
-        canvas.drawRightString(A4[0] - 1 * cm, 1 * cm, footer_text)
+        canvas.drawCentredString(A4[0]/2, 1*cm, f"Pagina {doc.page}")
+        footer_txt = f"Generato il {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+        canvas.drawRightString(A4[0]-1*cm, 1*cm, footer_txt)
         canvas.restoreState()
 
-    # costruzione document
     doc = SimpleDocTemplate(buffer, pagesize=A4,
                             rightMargin=2*cm, leftMargin=2*cm,
                             topMargin=2*cm, bottomMargin=2*cm)
+    doc.addPageTemplates([PageTemplate(id='All',
+        frames=[Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height)],
+        onPage=_footer)])
 
-    doc.addPageTemplates([PageTemplate(id='All', frames=[Frame(doc.leftMargin, doc.bottomMargin,
-                                                                doc.width, doc.height)],
-                                       onPage=_footer)])
     elements = []
 
+    # Copertina
     logo_file = logo_path
     if not os.path.exists(logo_file):
         alt = os.path.join("assets", os.path.basename(logo_path))
-        if os.path.exists(alt):
-            logo_file = alt
-
-    # Se il file esiste, lo inserisci
+        if os.path.exists(alt): logo_file = alt
     if os.path.exists(logo_file):
-        img = PlatypusImage(logo_file, width=6*cm, height=6*cm)
-        elements.append(img)
-        elements.append(Spacer(1, 12))
+        img = PlatypusImage(logo_file, width=8*cm, height=8*cm)
+        elements.extend([img, Spacer(1,20)])
+    elements.extend([
+        Paragraph("Report Analitico Azienda", title_style),
+        Paragraph(f"{azienda} – {anno}", subtitle_style),
+        Paragraph(f"Data generazione: {datetime.now().strftime('%d/%m/%Y, %H:%M')}", body_style),
+        PageBreak()
+    ])
 
-    # Titolo e sottotitolo
-    title = Paragraph(f"<b>Report Analitico Azienda</b>", styles["Title"])
-    elements.append(title)
-    subtitle = Paragraph(f"<b>{azienda} – {anno}</b>", styles["Heading2"])
-    elements.append(subtitle)
-    gen_date = datetime.now().strftime("%d %B %Y, %H:%M")
-    elements.append(Paragraph(f"Data generazione: {gen_date}", styles["Normal"]))
-    elements.append(PageBreak())
-
-    # === Nota introduttiva ===
+    # Nota introduttiva
     if nota:
-        elements.append(Paragraph("📝 Nota introduttiva", styles["Heading2"]))
-        elements.append(Paragraph(nota, styles["BodyText"]))
-        elements.append(Spacer(1, 12))
+        elements.extend([
+            Paragraph("📝 Nota introduttiva", heading_style),
+            Paragraph(nota, body_style),
+            PageBreak()
+        ])
 
-    # === Sezioni con grafici ===
-    def _append_img(section_title, img_list):
+    # Osservazioni KPI
+    if osservazioni_kpi:
+        elements.append(Paragraph("💬 Osservazioni KPI", heading_style))
+        for t in osservazioni_kpi:
+            elements.append(Paragraph(f"• {t}", body_style))
+        elements.append(PageBreak())
+
+    # Grafici Radar, Heatmap, Trend
+    def _append_section(titolo, img_list):
         if img_list:
-            elements.append(Paragraph(section_title, styles["Heading2"]))
+            elements.append(Paragraph(titolo, heading_style))
             for name, data in img_list:
                 bio = BytesIO(data)
-                img = PlatypusImage(bio, width=16*cm, height=9*cm)
-                elements.append(img)
-                elements.append(Spacer(1, 12))
-
-    _append_img("🎯 Radar KPI", radar_img or [])
-    _append_img("⏱️ Indicatori Strutturali", gauge_img or [])
-    _append_img("🌡️ Heatmap Voci di Bilancio", heatmap_img or [])
-    _append_img("📈 Trend KPI", trend_img or [])
-
-    # === Tabelle KPI, Voci, YoY ===
-    def _append_table(df, title, max_rows=40, fontsize=8):
-        if df is not None and not df.empty:
-            elements.append(Paragraph(title, styles["Heading2"]))
-            data = [list(df.columns)] + df.values.tolist()
-            # limitiamo righe
-            data = data[: max_rows + 1]
-            table = Table(data, hAlign="LEFT")
-            table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#DDDDDD")),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#999999")),
-                ("FONTSIZE", (0, 0), (-1, -1), fontsize),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ]))
-            elements.append(table)
+                img = PlatypusImage(bio, width=15*cm, height=8*cm)
+                elements.extend([img, Spacer(1,12)])
             elements.append(PageBreak())
 
-    _append_table(df_kpi, "📊 KPI", max_rows=20, fontsize=8)
-    _append_table(df_voci, "📁 Voci di Bilancio", max_rows=20, fontsize=7)
-    _append_table(df_yoy, "📉 Analisi YoY", max_rows=20, fontsize=7)
+    _append_section("🎯 Radar KPI", radar_img or [])
+    _append_section("🌡️ Heatmap Voci di Bilancio", heatmap_img or [])
+    _append_section("📈 Trend KPI", trend_img or [])
 
-    # === Build finale ===
+    # === Gauge KPI strutturali (uno per pagina)
+    if gauge_img:
+        for name, data in gauge_img:
+            elements.append(Paragraph(f"⏱️ Gauge – {name.replace('gauge_','').replace('.png','')}", heading_style))
+            bio = BytesIO(data)
+            # uso dimensioni maggiori e proporzioni corrette
+            img = PlatypusImage(bio, width=14*cm, height=5*cm)
+            elements.extend([Spacer(1,12), img, PageBreak()])
+
+    # KPI Sintetici tabellari
+    if df_kpi is not None and not df_kpi.empty:
+        kpi_sint = ["ROE","ROI","EBITDA Margin","Indice Sintetico"]
+        df_s = df_kpi[df_kpi["KPI"].isin(kpi_sint)]
+        if not df_s.empty:
+            tbl = [["KPI","Valore","Benchmark"]]
+            for _,r in df_s.iterrows():
+                ref = benchmark.get(r["KPI"])
+                tbl.append([r["KPI"],f"{r['Valore']:.2f}", f"{ref:.2f}" if ref else "–"])
+            table = Table(tbl, colWidths=[5*cm,3*cm,3*cm], hAlign="LEFT")
+            table.setStyle(TableStyle([
+                ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#DDDDDD")),
+                ("GRID",(0,0),(-1,-1),0.5,colors.HexColor("#999999")),
+                ("ROWBACKGROUNDS",(1,1),(-1,-1),[colors.white,colors.HexColor("#F5F5F5")]),
+                ("ALIGN",(1,0),(-1,-1),"CENTER"),
+                ("VALIGN",(0,0),(-1,-1),"MIDDLE")
+            ]))
+            elements.extend([Paragraph("📊 KPI Sintetici", heading_style), table, PageBreak()])
+
+    # Tabelle Voci di Bilancio e YoY
+    def _append_table(df, titolo):
+        if df is not None and not df.empty:
+            data = [list(df.columns)] + df.values.tolist()
+            table = Table(data, hAlign="LEFT")
+            table.setStyle(TableStyle([
+                ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#ECECEC")),
+                ("GRID",(0,0),(-1,-1),0.3,colors.HexColor("#CCCCCC")),
+                ("FONTSIZE",(0,0),(-1,-1),8),
+                ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+                ("ALIGN",(1,1),(-1,-1),"RIGHT"),
+            ]))
+            elements.extend([Paragraph(titolo, heading_style), table, PageBreak()])
+
+    _append_table(df_voci, "📁 Voci di Bilancio")
+    _append_table(df_yoy, "📉 Analisi YoY")
+
+    # Build
     doc.build(elements)
-    pdf_bytes = buffer.getvalue()
+    pdf = buffer.getvalue()
     buffer.close()
-    return pdf_bytes
+    return pdf

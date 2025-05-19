@@ -126,32 +126,81 @@ def genera_radar_kpi(kpi_dict, benchmark=None):
 
 
 @st.cache_data(show_spinner=False)
-def grafico_gauge_indice(df_dict, benchmark=None):
-    benchmark = benchmark or {}
-    indicatori = ["Indice liquidità", "Indice indebitamento", "Equity ratio", "Return on Equity"]
+def grafico_gauge_indice(valori: dict, benchmark: dict) -> go.Figure:
+    """
+    Crea un layout 2x2 con gauge KPI strutturali, titoli esterni e delta leggibile.
+    """
+
     fig = go.Figure()
-    for i, ind in enumerate(indicatori):
-        v = float(df_dict.get(ind, 0) or 0)
-        ref = float(benchmark.get(ind, 0) or 0)
-        max_val = max(v, ref)*1.5 or 1.0
-        steps = [
-            {"range":[0, ref], "color":"rgba(200,50,50,0.4)"},
-            {"range":[ref, max_val], "color":"rgba(50,200,50,0.4)"}
-        ]
+    kpi_order = list(valori.keys())
+
+    for i, kpi in enumerate(kpi_order):
+        val = valori.get(kpi)
+        ref = benchmark.get(kpi, None)
+        if val is None:
+            continue
+
+        # Layout 2x2: domain (x,y) manuale
+        row, col = divmod(i, 2)
+        domain_x = [0.05, 0.48] if col == 0 else [0.52, 0.95]
+        domain_y = [0.55, 0.95] if row == 0 else [0.05, 0.45]
+
+        # Intervallo benchmark
+        if "indebit" in kpi.lower() or "debito" in kpi.lower():
+            target_min = 0
+            target_max = ref if ref else 1
+        else:
+            target_min = ref if ref else 1
+            target_max = ref * 2 if ref else 3
+
         fig.add_trace(go.Indicator(
-            mode="gauge+number+delta" if ref else "gauge+number",
-            value=v, delta={"reference":ref},
-            domain={"row":i//2, "column":i%2},
-            title={"text":ind},
-            gauge={"axis":{"range":[0, max_val]}, "bar":{"color":"#1f77b4"},
-                   "steps":steps, "threshold":{"line":{"color":"black","width":2},"thickness":0.75,"value":ref}}
+            mode="gauge+number+delta",
+            value=val,
+            domain={'x': domain_x, 'y': domain_y},
+            number={'font': {'size': 26}},
+            delta={
+                'reference': ref,
+                'relative': False,
+                'position': "bottom",
+                'increasing': {'color': "green"},
+                'decreasing': {'color': "red"},
+                'font': {'size': 14}
+            },
+            gauge={
+                'axis': {'range': [0, target_max * 1.2]},
+                'bar': {'color': "#1E88E5"},
+                'steps': [
+                    {'range': [0, target_min], 'color': "#f8d7da"},
+                    {'range': [target_min, target_max], 'color': "#d4edda"},
+                ],
+                'threshold': {
+                    'line': {'color': "black", 'width': 2},
+                    'thickness': 0.8,
+                    'value': ref if ref else target_max
+                }
+            }
         ))
-    if not fig.data:
-        return None
-    fig.update_layout(grid={"rows":2,"columns":2}, height=500,
-                      margin=dict(l=40,r=40,t=60,b=40),
-                      title="⏱️ Indicatori Strutturali")
+
+        # === Titolo esterno (sopra il gauge)
+        fig.add_annotation(
+            text=f"<b>{kpi}</b>",
+            x=sum(domain_x)/2,
+            y=domain_y[1] + 0.07,
+            xref="paper",
+            yref="paper",
+            showarrow=False,
+            font=dict(size=16)
+        )
+
+    fig.update_layout(
+        margin=dict(t=40, b=40, l=40, r=40),
+        height=600,
+        paper_bgcolor="white"
+    )
+
     return fig
+
+
 
 @st.cache_data(show_spinner=False)
 def genera_heatmap_aziende(bilanci_dict):
@@ -275,3 +324,52 @@ def genera_grafico_confronto_kpi(df_kpi, kpi, anno, benchmark):
                       barmode="group", template="simple_white",
                       margin=dict(t=60,l=40,r=40,b=40), height=400)
     return fig
+
+def kpi_card(titolo, valore, benchmark=None, inverti_colori=False):
+    """
+    Rende un KPI in formato card HTML, con stile condizionato e supporto benchmark.
+    :param titolo: Nome del KPI da mostrare
+    :param valore: Valore numerico del KPI
+    :param benchmark: Valore atteso/benchmark di confronto
+    :param inverti_colori: True se valori più bassi sono migliori (es. debito)
+    :return: HTML string
+    """
+
+    # === Valida valore
+    if valore is None or not isinstance(valore, (int, float)):
+        return f"<div class='card warning'><b>{titolo}</b><br><span class='kpi-warning'>N/D</span></div>"
+
+    # === Definizione colore semaforico
+    classe = "kpi-positivo"
+    if benchmark is not None:
+        try:
+            if inverti_colori:
+                if valore <= benchmark:
+                    classe = "kpi-positivo"
+                elif valore <= benchmark * 1.2:
+                    classe = "kpi-benchmark"
+                else:
+                    classe = "kpi-negativo"
+            else:
+                if valore >= benchmark:
+                    classe = "kpi-positivo"
+                elif valore >= benchmark * 0.8:
+                    classe = "kpi-benchmark"
+                else:
+                    classe = "kpi-negativo"
+        except:
+            classe = "kpi-benchmark"
+    else:
+        classe = "kpi-benchmark"
+
+    # === Format valore numerico
+    valore_fmt = f"{valore:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+    # === Output HTML coerente con theme.css
+    html = f"""
+    <div class='card'>
+        <div style='font-weight: 600; font-size: 0.9rem;'>{titolo}</div>
+        <div class='{classe}' style='font-size: 1.6rem;'>{valore_fmt}</div>
+    </div>
+    """
+    return html
