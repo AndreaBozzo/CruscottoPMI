@@ -39,6 +39,8 @@ Consulta [`requirements.txt`](requirements.txt) per la lista aggiornata delle di
 ## ▶️ Come eseguire l'app
 
 -pip install -requirements.txt
+
+
 -python run app.py
 
 ## 🧪 Modalità Demo
@@ -47,7 +49,6 @@ La modalità demo consente di esplorare tutte le funzionalità con dati fittizi 
 
 ---
 
-Oppure apri `00_home.py` da un IDE (es. VSCode) e avvia Streamlit.
 
 Realizzato da **Andrea Bozzo**  
 📁 [GitHub Repository](https://github.com/AndreaBozzo/CruscottoPMI)  
