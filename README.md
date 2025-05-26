@@ -1,7 +1,7 @@
 
 # 📊 CruscottoPMI
 
-**CruscottoPMI** è un'applicazione interattiva costruita con Python e Streamlit per l'analisi economico-finanziaria di **Piccole e Medie Imprese** (PMI).  
+**CruscottoPMI** è un'applicazione interattiva, demo di Cruscotto Core, costruita con Python e Streamlit per l'analisi economico-finanziaria di **Piccole e Medie Imprese** (PMI).  
 Permette di caricare bilanci in formato Excel, analizzare KPI chiave, confrontare più aziende e generare report PDF professionali.
 
 [![Version](https://img.shields.io/badge/version-v0.7-blue)](https://github.com/AndreaBozzo/CruscottoPMI/releases)
