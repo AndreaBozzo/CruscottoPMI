@@ -15,7 +15,6 @@ Permette di caricare bilanci in formato Excel, analizzare KPI chiave, confrontar
 
 ## 🚀 Funzionalità v0.7
 
-- ✅ Caricamento intelligente file Excel (riconosce nomi fogli e colonne anche non standard)
 - 🧠 KPI con badge dinamici, benchmarking e commenti automatici
 - 📉 Analisi YoY e confronto multi-anno / multi-azienda
 - 📊 Heatmap, radar, gauge, e dashboard interattive
