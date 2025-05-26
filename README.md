@@ -6,13 +6,6 @@ Permette di caricare bilanci in formato Excel, analizzare KPI chiave, confrontar
 
 [![Version](https://img.shields.io/badge/version-v0.7-blue)](https://github.com/AndreaBozzo/CruscottoPMI/releases)
 
-> 🎯 **Clicca sul badge "Open in Streamlit" qui sopra per aprire subito la demo online.**  
-> Non serve installare nulla: puoi provare il Cruscotto direttamente dal browser.
-
----
-
----
-
 ## 🚀 Funzionalità v0.7
 
 - 🧠 KPI con badge dinamici, benchmarking e commenti automatici
