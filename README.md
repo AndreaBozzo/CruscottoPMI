@@ -38,11 +38,8 @@ Consulta [`requirements.txt`](requirements.txt) per la lista aggiornata delle di
 
 ## ▶️ Come eseguire l'app
 
-- PDF dinamici con logo, grafici (radar, gauge, heatmap) e commenti KPI
-- Excel report per KPI, bilancio e variazioni YoY
-- ZIP esportabile contenente tutti i file generati
-
----
+-pip install -requirements.txt
+-python run app.py
 
 ## 🧪 Modalità Demo
 
